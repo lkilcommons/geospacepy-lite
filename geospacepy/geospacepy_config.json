@@ -1,6 +1,0 @@
-{
-    '_comment':'This is a JSON configuration file for geospacepy. It helps to avoid hardcoding any paths.'
-    'omnireader' : {
-        'local_cdf_dir':'/home/liamk/mirror/omni'
-    }
-}

@@ -21,7 +21,6 @@ setup(name='geospacepy',
       install_requires=['spacepy','ephem','numpy','matplotlib','scipy'],
       packages=['geospacepy'],
       package_dir={'geospacepy' : 'geospacepy'},
-      package_data={'geospacepy': ['geospacepy_config.json']},
       license='LICENSE.txt',
       zip_safe = False,
       classifiers = [
