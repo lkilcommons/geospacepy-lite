@@ -3,8 +3,9 @@ astrodynamics2.py - python library of astrodynamical functions for ASEN 5050
 Author - Liam Kilcommons
 """
 from numpy import *
+import numpy as np
 import matplotlib.pyplot as pp
-import itertools
+import itertools, datetime
 import ephem # Pyephem celestial ephemerides
 
 G = 6.67e-11 #N m^2/s^2
@@ -26,7 +27,7 @@ def rot1(angle,vec,deg=False):
 				   [0,   c,  s],
 				   [0,-1*s,  c]])
 	rotvec = dot(rotmat,vec.reshape((-1,1)))
-	return rotvec.flatten()
+	return rotvec.reshape(vec.shape)
 
 def rot2(angle,vec,deg=False):
 	#Angle in radians unless deg=True
@@ -38,7 +39,7 @@ def rot2(angle,vec,deg=False):
 				   [0,   1,   0],
 				   [s,   0,   c]])
 	rotvec = dot(rotmat,vec.reshape((-1,1)))
-	return rotvec.flatten()
+	return rotvec.reshape(vec.shape)
 
 def rot3(angle,vec,deg=False):
 	#Angle in radians unless deg=True
@@ -50,7 +51,7 @@ def rot3(angle,vec,deg=False):
 				   [-1*s,   c,  0],
 				   [   0,  0,  1]])
 	rotvec = dot(rotmat,vec.reshape((-1,1)))
-	return rotvec.flatten()
+	return rotvec.reshape(vec.shape)
 
 def rot_tests():
 	for func in [rot1,rot2,rot3]:
@@ -359,7 +360,6 @@ def ecef_cart2spherical(R_ECEF,deg=True):
 	#For clarity, function is not vectorized
 	R_ECEF = R_ECEF.flatten() #Make sure the vector is 1-d
 	r = sqrt(R_ECEF[0]**2+R_ECEF[1]**2+R_ECEF[2]**2) 
-	#Use the numpy linear algebra library's 'norm' function to find the magnitude of the cartesian vector
 	x = R_ECEF[0]
 	y = R_ECEF[1]
 	z = R_ECEF[2]
@@ -454,8 +454,8 @@ def ecef2enu(R_ECEF,lat,lon):
 		lonrot = lonrot-360.
 
 	colat = 90.-lat
-	R_ENU = rot1(colat*pi/180., 
-				rot3(lonrot*pi/180.,R_ECEF,deg=True)
+	R_ENU = rot1(colat, 
+				rot3(lonrot,R_ECEF,deg=True)
 				,deg=True)
 
 	return R_ENU
@@ -530,6 +530,25 @@ def ymdhms2jd(year,mon,day,hr,mn,sc):
 	#print t1,t2,t3,t4,t5
 	return t1-t2+t3+t4+t5
 
+def jd2ymdhms(jd):
+	dt = jd2datetime(jd)
+	return dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+
+def jd2datetime(jd):
+	#Takes julian date and returns datetime.datetime in UTC
+
+	#The inverse of above, from Vallado pp 208. (algorithm 22)
+	T1900 = (jd-2415019.5)/365.25
+	year = 1900+int(T1900)
+	leapyrs = int((year-1900-1)*.25)
+	days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
+	if days < 1.0:
+		year-=1
+		leapyrs = int((year-1900-1)*.25)
+		days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
+	#doy = int(days)
+	return datetime.datetime(year,1,1,0,0,0)+datetime.timedelta(days=days-1)
+
 def jd2gst(JD_UT1,deg=True):
 	#Following Vallado pg. 194, gets Greenwich Mean Sideral Time (GMST) in degrees if deg=True or radians otherwise
 	#Note that input time is in UT1 NOT UTC. If have UTC and want very accurate theta_gst, need to do UT1 = UTC + Delta_UT1
@@ -591,6 +610,57 @@ def groundtrack(year,decimaldoy,a,e,w,Omega,M0,n,timestep=60.,timelen=3*3600.,w_
 		M = M+n_deg*timestep
 
 	return lat_arr,lon_arr
+
+def hour_angle(dt, lons, hours=False):
+	# Modified to use ephem sun 
+	# from algoithim on Stack Overflow: http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
+	# @input UTC time (datetime)
+	# @input lon(float, degrees, negative west of Greenwich)
+	# @output hour angle, in degrees (float)
+
+	sun = ephem.Sun()
+	o = ephem.Observer()
+	o.lat,o.lon,o.date = 0.,0.,dt
+	sun.compute(o)
+	ra = sun.ra
+
+	#lons=-1.*lons
+
+	jd = ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second)
+	gst = jd2gst(jd,deg=False)
+
+	ha = np.degrees(gst + np.radians(lons) - ra)
+
+	if hours:
+		ha = ha/180.*12
+
+	return ha
+
+def solar_zenith_angle(dt,lats,lons):
+	"""
+	Finds the solar zenith angle of n geocentric lat,lon
+	locations
+
+	From wikipedia (sigh...)
+
+	cos(SZA) = sin(glat)sin(dec)+cos(glat)cos(dec)cos(slt/12*pi)
+	
+	where: 
+		glat is the geocentric latitude
+		dec is the solar declination
+		slt is the solar local time in hours
+
+	"""
+	obs = ephem.Observer()
+	obs.lat,obs.lon,obs.date = 0.,0.,dt
+	sun = ephem.Sun()
+	sun.compute(obs)
+	lat_s = ephem.degrees(sun.dec) # Subsolar lat
+	lon_s = ephem.degrees(sun.ra) - jd2gst(ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second),deg=True)
+	dec = ephem.degrees(sun.dec)/180.*np.pi # Declination in radians
+	sha = hour_angle(dt,lons)/180.*np.pi # hour_angle returns in degrees unless hours=True
+	lam = np.radians(lats)
+	return np.degrees(np.arccos(np.sin(lam)*np.sin(dec)+np.cos(lam)*np.cos(dec)*np.cos(sha)))
 
 def terminator(dt,lat_space=1):
 	"""Find the longitude of the terminator latitudes lat_space apart with fixed time dt"""

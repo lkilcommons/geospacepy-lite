@@ -18,29 +18,6 @@ from scipy import interpolate
 from scipy import ndimage
 log = logging.getLogger('dmsp.satplottools')
 log.setLevel(logging.DEBUG)
-#import matplotlib.pyplot as pp
-#import readDMSPAmpr
-#
-#def self_test():
-#    pp.figure()
-#    ax=draw_dialplot(pp.axes())
-#    dmspdat = readDMSPAmpr.readDMSP(137)
-#    thisdmsp = dmspdat['DMSP-F16']
-#    pdat = thisdmsp[:,[1,2,4,5,6]]
-#    pdat[:,4] = pdat[:,4]*-1.
-#    plot_data = vector_plot(ax,pdat)    
-#    pp.show()
-#    return plot_data
-
-#def mauteRules(min_lat,lat_minres,lt_minres):
-	#produces LAT, LT arrays that are n x 2 numpy arrays (where n = number of bins)
-	#designed to be used to specify bin edges in hist2d. The bins are designed to 
-	#have equal solid angle coverage for a fixed altitude
-	#min_lat is the lowest latitude that will be included in the bins
-	#if min_lat < 0 then the bins will be for southern hemisphere data
-	#lat_minres is the width of the smallest bin in latitude
-	#lt_minres is the width of the smallest bin in localtime
-	#n_lat_rings = min_lat./lat_minres
 
 def dipole_tilt_angle(dts):
 	"""
@@ -268,10 +245,10 @@ def simple_passes(latitude):
 		#poleward crossing
 		if latitude[k-1] < 0. and latitude[k] >= 0.:
 			entered_north.append(k)
-			print "Entered Northern Hemisphere: ind:%d,lat:%.3f" % (k,latitude[k])
+			#print "Entered Northern Hemisphere: ind:%d,lat:%.3f" % (k,latitude[k])
 		elif latitude[k-1] > 0. and latitude[k] <= 0.:
 			entered_south.append(k)
-			print "Entered Southern Hemisphere: ind:%d,lat:%.3f" % (k,latitude[k])
+			#print "Entered Southern Hemisphere: ind:%d,lat:%.3f" % (k,latitude[k])
 
 	xings = entered_north+entered_south
 	xings.sort()
@@ -675,7 +652,8 @@ def multiline_timelabels(ax,tdata,xdata,strffmt='%H:%M',xfmt=['%.1f']):
 
 	return ax
 
-def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False):
+def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False,
+	draw_circles=True,latlabels=True):
 	"""
 	Draws the dialplot and labels the latitudes
 
@@ -697,22 +675,28 @@ def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False):
 	thecolor = 'grey'
 	thelinestyle='solid'
 	thezorder = -100 #make sure the lines are in the background of the plot
-	#Circles 
-	if minlat == 60:
-		ax.plot(30*cos(phi),30*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(20*cos(phi),20*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(10*cos(phi),10*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)            
-	elif minlat == 50:
-		ax.plot(40*cos(phi),40*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(30*cos(phi),30*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(20*cos(phi),20*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(10*cos(phi),10*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-	elif minlat == 40:
-		ax.plot(50*cos(phi),50*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(40*cos(phi),40*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(30*cos(phi),30*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(20*cos(phi),20*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
-		ax.plot(10*cos(phi),10*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+
+	if draw_circles:
+		#Circles 
+		if minlat == 60:
+			ax.plot(30*cos(phi),30*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(20*cos(phi),20*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(10*cos(phi),10*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)            
+		elif minlat == 50:
+			ax.plot(40*cos(phi),40*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(30*cos(phi),30*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(20*cos(phi),20*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(10*cos(phi),10*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+		elif minlat == 40:
+			ax.plot(50*cos(phi),50*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(40*cos(phi),40*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(30*cos(phi),30*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(20*cos(phi),20*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+			ax.plot(10*cos(phi),10*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+	else:
+		#Just the border
+		ax.plot((minlat-10)*cos(phi),(minlat-10)*sin(phi),color=thecolor,linestyle=thelinestyle,zorder=thezorder)
+
 	#Labels    
 	tcolor = 'red'    
 	
@@ -760,20 +744,22 @@ def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False):
 	# line([-50 50],[0 0],'Color',[0.7 0.7 0.7],'LineWidth',1.5)
 	for i in xrange(1,25):
 		th = (i-1)*pi/12;
-		r_min = 10; 
+		r_min = 3; 
 		r_max = 90-minlat;
 		ax.plot([r_min*cos(th), r_max*cos(th)],[r_min*sin(th), r_max*sin(th)],color=thecolor,linestyle=thelinestyle,zorder=thezorder,
 			 linewidth=1)
-	sh = r'-' if southern_hemi else ''
-	ax.text( 6,-5,sh+r'$80^o$',fontsize=fslat,color=tcolor);
-	ax.text(16,-5,sh+r'$70^o$',fontsize=fslat,color=tcolor);
-	ax.text(26,-5,sh+r'$60^o$',fontsize=fslat,color=tcolor);
-	
-	if minlat < 60:
-		ax.text(36,-5,r'$50^o$',fontsize=fslat,color=tcolor);
-			   
-	if minlat < 50:
-		ax.text(46,-5,r'$40^o$',fontsize=fslat,color=tcolor);
+
+	if latlabels:
+		sh = r'-' if southern_hemi else ''
+		ax.text( 6,-5,sh+r'$80^o$',fontsize=fslat,color=tcolor);
+		ax.text(16,-5,sh+r'$70^o$',fontsize=fslat,color=tcolor);
+		ax.text(26,-5,sh+r'$60^o$',fontsize=fslat,color=tcolor);
+		
+		if minlat < 60:
+			ax.text(36,-5,r'$50^o$',fontsize=fslat,color=tcolor);
+				   
+		if minlat < 50:
+			ax.text(46,-5,r'$40^o$',fontsize=fslat,color=tcolor);
 
 	ax.set_frame_on(False)
 	ax.axes.get_yaxis().set_visible(False)

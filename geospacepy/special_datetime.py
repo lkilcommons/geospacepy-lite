@@ -43,6 +43,25 @@ def ymdhms2jd(year,mon,day,hr,mn,sc):
 	#print t1,t2,t3,t4,t5
 	return t1-t2+t3+t4+t5
 
+def jd2ymdhms(jd):
+	dt = jd2datetime(jd)
+	return dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
+
+def jd2datetime(jd):
+	#Takes julian date and returns datetime.datetime in UTC
+
+	#The inverse of above, from Vallado pp 208. (algorithm 22)
+	T1900 = (jd-2415019.5)/365.25
+	year = 1900+int(T1900)
+	leapyrs = int((year-1900-1)*.25)
+	days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
+	if days < 1.0:
+		year-=1
+		leapyrs = int((year-1900-1)*.25)
+		days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
+	#doy = int(days)
+	return datetime.datetime(year,1,1,0,0,0)+datetime.timedelta(days=days-1)
+
 #Julian Date (reasonably precise, but w/o leap seconds)
 def datetime2jd(dt):
 	return ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second)
@@ -164,6 +183,21 @@ def datetimearr2jd(datetimearr):
 		jd[k,0] = datetime2jd(dt)
 	return jd
 
+def jdarr2datetime(jdarr):
+	"""
+	Converts a n x 1 or 1 x n or (n,) array of julian days
+	to an n x 1 python datetime array
+	"""
+	#Input sanitize
+	if isinstance(jdarr,numpy.ndarray):
+		jdarr = jdarr.flatten().tolist() #Easier to deal with list, no indexing ambiguity
+
+	dts = numpy.empty((len(jdarr),1),dtype='object')
+	for k in xrange(len(jdarr)):
+		dts[k,0] = jd2datetime(jdarr[k])
+
+	return dts
+
 def datetimearr2j2000(datetimearr):
 	"""
 	Converts a n x 1 or 1 x n or (n,) array of python datetimes
@@ -218,7 +252,7 @@ def sodarr2datetime(sodarr,year,month,day):
 
 	#Input sanitize
 	if isinstance(sodarr,numpy.ndarray):
-		sodarr = sodarr.tolist() #Easier to deal with list, no indexing ambiguity
+		sodarr = sodarr.flatten().tolist() #Easier to deal with list, no indexing ambiguity
 
 	dt = numpy.empty((len(sodarr),1),dtype='object')
 	for k in xrange(len(sodarr)):
@@ -309,6 +343,7 @@ def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_du
 	#Preallocate the results array and fill it with nan
 	inds = lmk_utils.nan( (len(dt),1) )
 
+	n_unmatched = 0
 	for i in range(len(dt)):
 		try:
 			#Find the place where dt[i,0] should be inserted into primary_dt to maintain 
@@ -366,7 +401,8 @@ def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_du
 					elif after_intol and (not after_duplicate or allow_duplicates):
 						inds[i] = ind
 					else:
-						log.warn('No match found for timestamp %s' % (dt[i,0].strftime(fmstr)))
+						n_unmatched+=1
+						#log.warn('No match found for timestamp %s' % (dt[i,0].strftime(fmstr)))
 
 			elif ind == 0 or ind == len(primary_dt):
 				#Edge cases, use bisect left result if within tolerence
@@ -376,8 +412,9 @@ def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_du
 				if abs(delta.total_seconds()*1.0e6) < tol_us and (ind not in inds or allow_duplicates):
 					inds[i] = ind
 				else:
-					log.warn('No match found for timestamp %s [NOTE: Edge case, closest match was beginning or end of primary_dt]' % \
-						(dt[i,0].strftime(fmstr)))
+					n_unmatched+=1
+					#log.warn('No match found for timestamp %s [NOTE: Edge case, closest match was beginning or end of primary_dt]' % \
+					#	(dt[i,0].strftime(fmstr)))
 
 			else:
 				log.error('Unhandled bisect case...this should not happen')
@@ -456,11 +493,13 @@ def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplic
 	ep2dt = lambda ep: reftime + datetime.timedelta(seconds=ep)
 
 	log.debug("Beginning matching")
+	n_unmatched = 0
 	for i in range(len(dt)):
 		if numpy.mod(i,5000)==0 and i>0:
 			rate = float(i)/(datetime.datetime.now()-starttime).total_seconds()
 			timetoend = (len(dt)-i)/rate/60.
-			log.info("%d/%d matched: ~%.3f iterations/sec. About %.1f minutes remain." % (i,len(dt),rate,timetoend))
+			log.info("%d/%d matched, %d unmatched: ~%.3f iterations/sec. About %.1f minutes remain." % (i,len(dt),n_unmatched,rate,timetoend))
+			n_unmatched = 0
 		try:
 			#Find the place where dt[i,0] should be inserted into primary_dt to maintain 
 			#sorted order. bisect and bisect_left should always return the same index 
@@ -513,7 +552,8 @@ def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplic
 					elif delta_after_us < tol_us and (not after_duplicate or allow_duplicates):
 						inds[i] = ind
 					else:
-						log.warn('No match found for timestamp %s' % (ep2dt(dt[i]).strftime(fmstr)))
+						n_unmatched += 1
+						#log.warn('No match found for timestamp %s' % (ep2dt(dt[i]).strftime(fmstr)))
 
 			elif ind == 0 or ind == len(primary_dt):
 				#Edge cases, use bisect left result if within tolerence
@@ -523,8 +563,9 @@ def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplic
 				if abs(delta*1.0e6) < tol_us and (ind not in inds or allow_duplicates):
 					inds[i] = ind
 				else:
-					log.warn('No match found for timestamp %s [NOTE: Edge case, closest match was beginning or end of primary_dt]' % \
-						(str(dt[i])))
+					n_unmatched += 1
+					#log.warn('No match found for timestamp %s [NOTE: Edge case, closest match was beginning or end of primary_dt]' % \
+					#	(str(dt[i])))
 
 			else:
 				log.error('Unhandled bisect case...this should not happen')
