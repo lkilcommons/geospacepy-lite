@@ -874,7 +874,7 @@ def hairplot(ax,lat,lt,C,hemisphere,max_size=10,max_val=None,vmin=None,vmax=None
 def crosstrackplot(ax,lat,lt,vcross,hemisphere,max_size=10,
 		max_val=None,vmin=None,vmax=None,ref_units=None,key_label=None,
 		dialplot=True,horizontal=False,min_displayed=0.,
-		leftorright='left',label_start_end=False,
+		leftorright='left',label_start_end=False,no_quiverkey=False,
 		alpha=.75,single_color=None,key_pos=(.05,.05),**kwargs):
 	"""
 	Makes top-down polar plots with lines perpendicular to the 
@@ -938,7 +938,8 @@ def crosstrackplot(ax,lat,lt,vcross,hemisphere,max_size=10,
 		else:
 			key_label = key_label
 		keycolor = mappable.to_rgba(vmax) if single_color is None else single_color
-		ax.quiverkey(Q, key_pos[0], key_pos[1], max_size, key_label,color=keycolor,labelpos='E',coordinates='figure')
+		if not no_quiverkey:
+			ax.quiverkey(Q, key_pos[0], key_pos[1], max_size, key_label,color=keycolor,labelpos='E',coordinates='figure')
 
 	return mappable if single_color is None else Q
 
