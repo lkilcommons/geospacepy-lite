@@ -1855,7 +1855,7 @@ metadata={
                "SCALEMIN": 0.00000,
             },
          },
-         "flow_speed:":
+         "flow_speed":
          {
             "column": 21,
             "attrs":
@@ -2847,7 +2847,7 @@ metadata={
                "SCALEMIN": 0.00000,
             },
          },
-         "flow_speed:":
+         "flow_speed":
          {
             "column": 21,
             "attrs":
