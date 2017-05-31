@@ -237,6 +237,7 @@ def print_passes(times,latitude,north_crossings,south_crossings):
 
 
 def simple_passes(latitude):
+	
 	npts = len(latitude.flatten())
 	entered_north = []
 	entered_south = []

@@ -302,7 +302,7 @@ def datenumarr2datetime(datenumarr,asArray=True):
 		datetimes = numpy.array(datetimes)
 	return datetimes
 
-def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_duplicates=False):
+def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_duplicates=False,warn_no_match=False):
 	"""
 	Finds a matching timestamp in primary_dt 
 	within tolerance tol_us (given in microseconds)
@@ -401,8 +401,11 @@ def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_du
 					elif after_intol and (not after_duplicate or allow_duplicates):
 						inds[i] = ind
 					else:
+						if warn_no_match:
+							log.warn('No match found for timestamp %s' % (dt[i,0].strftime(fmstr)))
 						n_unmatched+=1
 						#log.warn('No match found for timestamp %s' % (dt[i,0].strftime(fmstr)))
+
 
 			elif ind == 0 or ind == len(primary_dt):
 				#Edge cases, use bisect left result if within tolerence

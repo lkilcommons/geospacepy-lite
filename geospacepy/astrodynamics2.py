@@ -612,7 +612,7 @@ def groundtrack(year,decimaldoy,a,e,w,Omega,M0,n,timestep=60.,timelen=3*3600.,w_
 	return lat_arr,lon_arr
 
 def hour_angle(dt, lons, hours=False):
-	# Modified to use ephem sun 
+	# Modified to use ephem sun
 	# from algoithim on Stack Overflow: http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
 	# @input UTC time (datetime)
 	# @input lon(float, degrees, negative west of Greenwich)
@@ -658,7 +658,9 @@ def solar_zenith_angle(dt,lats,lons):
 	lat_s = ephem.degrees(sun.dec) # Subsolar lat
 	lon_s = ephem.degrees(sun.ra) - jd2gst(ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second),deg=True)
 	dec = ephem.degrees(sun.dec)/180.*np.pi # Declination in radians
-	sha = hour_angle(dt,lons)/180.*np.pi # hour_angle returns in degrees unless hours=True
+	#sha = hour_angle(dt,lons)/180.*np.pi # hour_angle returns in degrees unless hours=True
+	#something is bugged in the hour angle function
+	sha = np.radians(lons)+(dt.hours+dt.minutes/60)/12*np.pi
 	lam = np.radians(lats)
 	return np.degrees(np.arccos(np.sin(lam)*np.sin(dec)+np.cos(lam)*np.cos(dec)*np.cos(sha)))
 
