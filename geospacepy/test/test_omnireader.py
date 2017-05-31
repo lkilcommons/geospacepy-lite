@@ -28,6 +28,16 @@ def test_omnireader_can_download_txt():
 	downloaded_txt = os.path.join(od.localdir,od.filename_gen['5min'](dt))
 	assert os.path.exists(downloaded_txt)
 
+@pytest.fixture(params=['5min','1min'],
+		ids=['5min','1min'])
+def test_flowspeed_key_error_fixed(request):
+	"""
+	Test that flow_speed is a valid key for 1 and 5 minute files
+	There was an extra colon in the key, i.e. flow_speed:
+	"""
+	cadence = request.param
+	oi = omnireader.omni_interval(dt,dt+datetime.timedelta(days=1),cadence,cdf_or_txt='txt')
+	assert 'flow_speed' in oi.cdfs[-1].vars
 
 @pytest.mark.skipif(pkgutil.find_loader('spacepy') is None,
                     reason="requires spacepy.pycdf, CDF reading library")

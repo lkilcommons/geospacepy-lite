@@ -12,7 +12,7 @@ import scipy.interpolate as interpolate
 try:
 	from spacepy import pycdf
 	spacepy_is_available = True
-except KeyboardInterrupt:
+except:
 	print traceback.format_exc()
 	print textwrap.dedent("""
 		------------IMPORTANT----------------------------
