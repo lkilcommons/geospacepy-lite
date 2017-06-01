@@ -212,12 +212,12 @@ def sathat(ut,pos,secondCoord='Longitude',lattype='geocentric',up_is_geodetic=Fa
 			c = np.cos(dth)
 			s = np.sin(dth)
 			if r<10:
-				print gdlat[r] - gclat[r]
+				print(gdlat[r] - gclat[r])
 			rotmat = np.array([[1,   0,  0], [0,   c,  -1*s],[0,s,  c]])
 			s = random.randint(0,86400/3)
 			if s==1:
-				print "Index %d: gdlat=%.3f gclat=%.3f" % (r,gdlat[r],gclat[r])
-				print(str(rotmat))
+				print("Index %d: gdlat=%.3f gclat=%.3f" % (r,gdlat[r],gclat[r]))
+				print((str(rotmat)))
 			
 			# Now we do the matrix product of the rotation matrix and each row of the along, across, and upward unit vectors
 
@@ -324,7 +324,7 @@ def parse_passes(times,latitude,boundary_lat=50.,orbital_period=90*60.):
 	ncrossings = 0
 	log.info("Beginning pass parse: %d datapoints, boundary_lat: %.1f, orbital_period: %s sec" %(len(times),boundary_lat,orbital_period))
 
-	for t in xrange(len(latitude)-1):
+	for t in range(len(latitude)-1):
 
 		dt = (times[t+1]-times[t]).total_seconds()
 		dl = latitude[t+1]-latitude[t]
@@ -639,7 +639,7 @@ def multiline_timelabels(ax,tdata,xdata,strffmt='%H:%M',xfmt=['%.1f']):
 		if ind is not None: #Sometimes tick is not found if it wants to tickmark outside of data range
 			tickstr = tick.strftime(strffmt)
 			if len(xdata.shape)>1: #If more than one column of additional data
-				for c in xrange(len(xdata[0,:])):
+				for c in range(len(xdata[0,:])):
 					tickstr+="\n"
 					tickstr+=xfmt[c] % (xdata[ind,c])
 			else: 
@@ -743,7 +743,7 @@ def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False,
 
 	# line([0 0],[-50 50],'Color',[0.7 0.7 0.7],'LineWidth',1.5); 
 	# line([-50 50],[0 0],'Color',[0.7 0.7 0.7],'LineWidth',1.5)
-	for i in xrange(1,25):
+	for i in range(1,25):
 		th = (i-1)*pi/12;
 		r_min = 3; 
 		r_max = 90-minlat;
@@ -1005,7 +1005,7 @@ def vector_plot(ax,data,satname='dmsp',color='blue',latlim=-50.,max_vec_len=12.,
 		inlatlim = data[:,1] < latlim
 	plot_data = data[inlatlim,:]
 	if len(plot_data) == 0:
-		print "Warning: vector_plot called with no data in display region"
+		print("Warning: vector_plot called with no data in display region")
 		return
 	#convert to colat
 	plot_data[:,1] = 90-abs(plot_data[:,1])
@@ -1063,7 +1063,7 @@ def vector_plot(ax,data,satname='dmsp',color='blue',latlim=-50.,max_vec_len=12.,
 	#to thin the vectors for speed and reduced clutter
 	#n_largest_to_keep = ceil(.05*len(magnitudes))
 	#Just keep the 10 largest magntiude vectors
-	C = concatenate((C[:10],C[range(10,len(C),skip)]))
+	C = concatenate((C[:10],C[list(range(10,len(C),skip))]))
 	
 	ax.hold(True)
 	ax.quiver(X[C],Y[C],X1[C],Y1[C],angles='xy',units='xy',width=width,color=color,scale_units='xy',scale=1,label=labeltext,alpha=alpha)
@@ -1147,7 +1147,7 @@ def vector_component_plot(ax_e,ax_n,data,satname='dmsp',color='blue',latlim=-50.
 		inlatlim = data[:,1] < latlim
 	plot_data = data[inlatlim,:]
 	if len(plot_data) == 0:
-		print "Warning: vector_plot called with no data in display region"
+		print("Warning: vector_plot called with no data in display region")
 		return
 	#convert to colat
 	plot_data[:,1] = 90-abs(plot_data[:,1])
@@ -1197,8 +1197,8 @@ def vector_component_plot(ax_e,ax_n,data,satname='dmsp',color='blue',latlim=-50.
 	C_N = argsort(scaled_data_n)[::-1]
 	C_E = argsort(scaled_data_e)[::-1]
 
-	C_N = concatenate((C_N[:10],C_N[range(10,len(C_N),skip)]))
-	C_E = concatenate((C_E[:10],C_E[range(10,len(C_E),skip)]))
+	C_N = concatenate((C_N[:10],C_N[list(range(10,len(C_N),skip))]))
+	C_E = concatenate((C_E[:10],C_E[list(range(10,len(C_E),skip))]))
 
 	#Use the original component data as the color
 	ax_e.quiver(X[C_E],Y[C_E],X_E[C_E],Y_E[C_E],plot_data[C_E,3],angles='xy',units='xy',width=.2,

@@ -114,7 +114,7 @@ def soyarr2datetime(soyarr,year):
 	year = lmk_utils.arraycheck(year,returnList=True)
 
 	dt = numpy.empty((len(soyarr),1),dtype='object')
-	for k in xrange(len(soyarr)):
+	for k in range(len(soyarr)):
 		if len(year)>1:
 			dt[k,0] = soy2datetime(soyarr[k],int(year[k,0]))
 		else:
@@ -147,7 +147,7 @@ def doyarr2datetime(doyarr,year):
 	year = lmk_utils.arraycheck(year,returnList=True)
 
 	dt = numpy.empty((len(doyarr),1),dtype='object')
-	for k in xrange(len(doyarr)):
+	for k in range(len(doyarr)):
 		if len(year)>1:
 			dt[k,0] = doy2datetime(doyarr[k],int(year[k]))
 		else:
@@ -193,7 +193,7 @@ def jdarr2datetime(jdarr):
 		jdarr = jdarr.flatten().tolist() #Easier to deal with list, no indexing ambiguity
 
 	dts = numpy.empty((len(jdarr),1),dtype='object')
-	for k in xrange(len(jdarr)):
+	for k in range(len(jdarr)):
 		dts[k,0] = jd2datetime(jdarr[k])
 
 	return dts
@@ -238,7 +238,7 @@ def datearr2sod(datearr):
 		raise RuntimeError('Input must be numpy.ndarray n x 6')
 
 	sod = numpy.empty((len(datearr[:,0]),1))
-	for k in xrange(len(datearr[:,0])):
+	for k in range(len(datearr[:,0])):
 		sod[k,0] = ymdhms2sod(int(datearr[k,0]),int(datearr[k,1]),int(datearr[k,2]),int(datearr[k,3]),int(datearr[k,4]),int(datearr[k,5]))
 	return sod
 
@@ -255,7 +255,7 @@ def sodarr2datetime(sodarr,year,month,day):
 		sodarr = sodarr.flatten().tolist() #Easier to deal with list, no indexing ambiguity
 
 	dt = numpy.empty((len(sodarr),1),dtype='object')
-	for k in xrange(len(sodarr)):
+	for k in range(len(sodarr)):
 		dt[k,0] = sod2datetime(sodarr[k],year,month,day)
 	return dt
 
@@ -271,7 +271,7 @@ def datearr2doy(datearr):
 
 	datearr = datearr.astype('int')
 	doy = numpy.array((len(datearr[:,0]),1))
-	for k in xrange(len(datearr[:,0])):
+	for k in range(len(datearr[:,0])):
 		doy[k,0] = ymdhms2doy(datearr[k,0],datearr[k,1],datearr[k,2],datearr[k,3],datearr[k,4],datearr[k,5])
 	return doy
 
@@ -283,7 +283,7 @@ def datearr2datetime(datearr,asArray=True):
 	"""	
 	datetimes = []
 	datearr = datearr.astype('int')	
-	for k in xrange(len(datearr[:,0])):
+	for k in range(len(datearr[:,0])):
 		datetimes.append(datetime.datetime(datearr[k,0],datearr[k,1],datearr[k,2],datearr[k,3],datearr[k,4],datearr[k,5])) 
 	if asArray:
 		datetimes = numpy.array(datetimes,ndmin=2)
@@ -297,7 +297,7 @@ def datenumarr2datetime(datenumarr,asArray=True):
 	This is sort of slow, but it gets the job done
 	"""	
 
-	datetimes = [datenum2datetime(datenumarr[k]) for k in xrange(len(datenumarr))]
+	datetimes = [datenum2datetime(datenumarr[k]) for k in range(len(datenumarr))]
 	if asArray:
 		datetimes = numpy.array(datetimes)
 	return datetimes
@@ -425,8 +425,8 @@ def matchTimes(primary_dt,dt,tol_s=1,tol_us=4e5,fail_on_duplicates=True,allow_du
 
 		except:
 			traceback.print_exc()
-			print "Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l)
-			print "dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l]))
+			print("Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l))
+			print("dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l])))
 			pdb.set_trace()
 
 	#print "Completed timestamp alignment, %d points remained unmatched out of %d\n" %(unmatched_counter,len(dt))
@@ -576,8 +576,8 @@ def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplic
 
 		except:
 			traceback.print_exc()
-			print "Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l)
-			print "dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l]))
+			print("Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l))
+			print("dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l])))
 			pdb.set_trace()
 
 	#print "Completed timestamp alignment, %d points remained unmatched out of %d\n" %(unmatched_counter,len(dt))

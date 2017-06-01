@@ -12,16 +12,16 @@ import scipy.interpolate as interpolate
 try:
 	from spacepy import pycdf
 	spacepy_is_available = True
-except:
-	print traceback.format_exc()
-	print textwrap.dedent("""
+except KeyboardInterrupt:
+	print(traceback.format_exc())
+	print(textwrap.dedent("""
 		------------IMPORTANT----------------------------
 		Unable to import spacepy. Will fall back to 
 		using Omni text files, but I really recommend
 		installing spacepy and using the cdf format. It's
 		faster.
 		-------------------------------------------------
-		""")
+		"""))
 	spacepy_is_available = False
 
 #Variables in 1 Hour CDFS
@@ -169,7 +169,7 @@ class omni_txt_cdf_mimic_var(object):
 
 	def identify_fill(self,debug=False):
 		if debug:
-			print "Defilling data from %s (column %d)..." % (self.name,self.column)
+			print("Defilling data from %s (column %d)..." % (self.name,self.column))
 		#Convert fill to NaN by testing for presence of all possible fills
 		possible_fills_no_decimal = ['999','9999','99999','999999','9999999','99999999',\
 			'999999999','9999999999']
@@ -183,7 +183,7 @@ class omni_txt_cdf_mimic_var(object):
 			nfill = np.count_nonzero(isfill)
 			if nfill>2.:
 				if debug:
-					print "Found %d instances of integer fill value %f" % (nfill,this_fill)
+					print("Found %d instances of integer fill value %f" % (nfill,this_fill))
 				self.data[isfill]=np.nan
 				continue
 			#Check all possible decimal locations
@@ -198,11 +198,11 @@ class omni_txt_cdf_mimic_var(object):
 				nfill = np.count_nonzero(isfill)
 				if nfill>2.:
 					if debug:
-						print "Found %d instances of float fill value %f for column %d" % (nfill,this_fill)
+						print("Found %d instances of float fill value %f for column %d" % (nfill,this_fill))
 					self.data[isfill] = np.nan
 					break
 		expected_fill = '<missing>' if 'FILLVAL' not in self.attrs else self.attrs['FILLVAL']
-		print "Fillval for %s (column %d) was identified as %f, tabluated as %s" % (self.name,self.column,this_fill,str(expected_fill))
+		print("Fillval for %s (column %d) was identified as %f, tabluated as %s" % (self.name,self.column,this_fill,str(expected_fill)))
 		return this_fill
 
 	def __getitem__(self,*args):
@@ -221,7 +221,7 @@ class omni_txt_cdf_mimic(object):
 		try:
 			self.data = np.genfromtxt(omnitxt)
 		except:
-			print "Reading from %s" % (omnitxt)
+			print("Reading from %s" % (omnitxt))
 			
 		#Load the dictionaries that map CDF variable names in 
 		#the omni CDFs to columns in the text files
@@ -271,16 +271,16 @@ class omni_downloader(object):
 		localfn = os.path.join(self.localdir,fn)
 		if not os.path.exists(localfn):
 			ftp = ftplib.FTP(self.ftpserv)
-			print 'Connecting to OMNIWeb FTP server %s' % (self.ftpserv)
+			print('Connecting to OMNIWeb FTP server %s' % (self.ftpserv))
 			ftp.connect()
 			ftp.login()
 
 			#Change directory
 			ftp.cwd(remote_path)
-			print 'Downloading file %s' % (remote_path+'/'+fn)
+			print('Downloading file %s' % (remote_path+'/'+fn))
 			with open(localfn,'wb') as f:
 				ftp.retrbinary('RETR ' + fn, f.write)
-			print "Saved as %s" % (localfn)
+			print("Saved as %s" % (localfn))
 			ftp.quit()
 
 		if self.cdf_or_txt is 'cdf':
@@ -433,8 +433,8 @@ class omni_interval(object):
 		#Find the first index larger than the enddt in the last CDF
 		self.ei = np.searchsorted(self.cdfs[-1]['Epoch'][:],enddt)
 		if not self.silent:
-			print "Created interval between %s and %s, cadence %s, start index %d, end index %d" % (self.startdt.strftime('%Y-%m-%d'),
-				self.enddt.strftime('%Y-%m-%d'),self.cadence,self.si,self.ei)
+			print("Created interval between %s and %s, cadence %s, start index %d, end index %d" % (self.startdt.strftime('%Y-%m-%d'),
+				self.enddt.strftime('%Y-%m-%d'),self.cadence,self.si,self.ei))
 		self.add_transform('KP',['hourly'],lambda x: x/10.,'Hourly Kp*10 -> Kp')
 		#Implement computed variables
 		self.computed = dict()
@@ -477,14 +477,14 @@ class omni_interval(object):
 				if np.count_nonzero(filled) > 0:
 					data[filled]=np.nan
 		except:
-			print "Unhandled fill value %s for variable %s" % (self.cdfs[-1][cdfvar].attrs['FILLVAL'],cdfvar)
+			print("Unhandled fill value %s for variable %s" % (self.cdfs[-1][cdfvar].attrs['FILLVAL'],cdfvar))
 		#Check for transforms which need to be performed
 		if cdfvar in self.transforms:
 			transform = self.transforms[cdfvar]
 			if self.cadence in transform['cadences']:
 				if not self.silent:
-					print "Applying transform %s to omni %s variable %s" % (transform['desc'],self.cadence,
-						cdfvar)
+					print("Applying transform %s to omni %s variable %s" % (transform['desc'],self.cadence,
+						cdfvar))
 				#print "Data before", data
 				data = transform['fcn'](data)
 				#print "Data after", data
@@ -533,7 +533,7 @@ class omni_event(object):
 		"""Interpolate a variable to the julian dates in jd"""
 		#Create an interpolant if we don't have one yet
 		if var not in self.interpolants:
-			print "No interpolant for variable %s, creating %d point interpolant" % (var,len(self.jd.flatten()))
+			print("No interpolant for variable %s, creating %d point interpolant" % (var,len(self.jd.flatten())))
 			t,y = self.jd.flatten(),self.interval[var].flatten()
 			g = np.isfinite(y)
 			self.interpolants[var]=interpolate.PchipInterpolator(t[g],y[g])
@@ -652,18 +652,18 @@ class omni_sea(object):
 
 		with open(os.path.join(csvdir,csvfn),'w') as f:
 			f.write(header)
-			print header
+			print(header)
 			for i in range(len(t.flatten())):
 				ln = '%.5f,%e,%e,%e\n' % (t[i],y_lq[i],y_med[i],y_uq[i])
 				f.write(ln)
-				print ln
+				print(ln)
 
 
 
 if __name__ == '__main__':
 	available_formats = ['cdf','txt'] if spacepy_is_available else ['txt']
 	for source_format in available_formats:
-		print "Producing superposed epoch plots"
+		print("Producing superposed epoch plots")
 
 		import seaborn as sns
 		#Test on a few Storm Sudden Commencement Events
@@ -712,7 +712,7 @@ if __name__ == '__main__':
 		sea_si = omni_sea(sudden_impulse,cadence='hourly',name='Sudden Impulse',ndays=ndays,cdf_or_txt=source_format)
 
 		ev = sea_ssc.events[-1]
-		print ev['Epoch'][1:10]
+		print(ev['Epoch'][1:10])
 
 		f = pp.figure(figsize=(11,12))
 		#a1 = f.add_subplot(2,1,1)
@@ -751,7 +751,7 @@ if __name__ == '__main__':
 		
 		f.suptitle('Superposed Epoch Analysis of \nSudden Impulse (N=%d) and Sudden Commencement (N=%d)' % (sea_si.nevents,sea_ssc.nevents))
 
-		print str(sea_si.events[0].interval)
+		print(str(sea_si.events[0].interval))
 		#pp.show()
 		#pp.pause(30)
 		f.savefig('omni_sea_si_ssc_%s.png' % (source_format))

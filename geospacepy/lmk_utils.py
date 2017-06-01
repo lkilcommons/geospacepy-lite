@@ -73,10 +73,10 @@ def deduplicate(arr,column=0,terse=False):
 
 	if not terse:
 		for k in range(len(mo_vals)):
-			print "Duplicate value %s occured %d times in column %d" % (mo_vals[k],mo_counts[k],column) 
-			print str(arr[arr[:,column]==mo_vals[k],:])
+			print("Duplicate value %s occured %d times in column %d" % (mo_vals[k],mo_counts[k],column)) 
+			print(str(arr[arr[:,column]==mo_vals[k],:]))
 	else:
-		print "Of %d input values, %d were unique, %d had more than one occurance." % (len(arr[:,column]),len(unqvals),len(mo_vals))
+		print("Of %d input values, %d were unique, %d had more than one occurance." % (len(arr[:,column]),len(unqvals),len(mo_vals)))
 
 	return arr[unqind,:]
 

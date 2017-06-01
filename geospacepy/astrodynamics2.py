@@ -56,8 +56,8 @@ def rot3(angle,vec,deg=False):
 def rot_tests():
 	for func in [rot1,rot2,rot3]:
 		for vec in [array([1,0,0]),array([[1],[0],[0]]),array([1,0,0]).flatten()]:
-			print "Applying %s with angle=pi/2 to %s" % (func.__name__,str(vec))
-			print "Result: %s" % (func(pi/2,vec)) 
+			print("Applying %s with angle=pi/2 to %s" % (func.__name__,str(vec)))
+			print("Result: %s" % (func(pi/2,vec))) 
 
 def convert(input,type,inputUnits,outputUnits):
 	#Create a dictionary of conversion factors
@@ -115,11 +115,11 @@ def truetoeccentric(nu,ecc,a=nan,b=nan,tolerence=.00001):
 	Efromecc = 2*arctan(sqrt((1-ecc)/(1+ecc))*tan(nu/2))
 
 	if abs(Efroma-Efromb) > tolerence: 
-		print "Warning: Eccentric anomally from semimajor (cosine) is not within %f rad of to Eccentric anomally from semiminor (sine)" %(tolerence)
+		print("Warning: Eccentric anomally from semimajor (cosine) is not within %f rad of to Eccentric anomally from semiminor (sine)" %(tolerence))
 	if abs(Efroma-Efromecc) > tolerence: 
-		print "Warning: Eccentric anomally from semimajor (cosine) is not within %f rad of to Eccentric anomally from eccentricity (tangent)" %(tolerence)
+		print("Warning: Eccentric anomally from semimajor (cosine) is not within %f rad of to Eccentric anomally from eccentricity (tangent)" %(tolerence))
 	if abs(Efromb-Efromecc) > tolerence: 
-		print "Warning: Eccentric anomally from semiminor (cosine) is not within %f rad of to Eccentric anomally from eccentricity (tangent)" %(tolerence)
+		print("Warning: Eccentric anomally from semiminor (cosine) is not within %f rad of to Eccentric anomally from eccentricity (tangent)" %(tolerence))
 	
 	return Efroma*180/pi, Efromb*180/pi, Efromecc*180/pi
 
@@ -139,11 +139,11 @@ def eccentrictotrue(E,ecc,a=nan,b=nan,tolerence=.00001):
 	nufromecc = 2*arctan(sqrt((1+ecc)/(1-ecc))*tan(E/2))
 
 	if abs(nufroma-nufromb) > tolerence: 
-		print "Warning: True anomally from semimajor (cosine) is not within %f rad \n of Eccentric anomally from semiminor (sine)" %(tolerence)
+		print("Warning: True anomally from semimajor (cosine) is not within %f rad \n of Eccentric anomally from semiminor (sine)" %(tolerence))
 	if abs(nufroma-nufromecc) > tolerence: 
-		print "Warning: True anomally from semimajor (cosine) is not within %f rad \n of Eccentric anomally from eccentricity (tangent)" %(tolerence)
+		print("Warning: True anomally from semimajor (cosine) is not within %f rad \n of Eccentric anomally from eccentricity (tangent)" %(tolerence))
 	if abs(nufromb-nufromecc) > tolerence: 
-		print "Warning: True anomally from semiminor (cosine) is not within %f rad \n of Eccentric anomally from eccentricity (tangent)" %(tolerence)
+		print("Warning: True anomally from semiminor (cosine) is not within %f rad \n of Eccentric anomally from eccentricity (tangent)" %(tolerence))
 	
 	return nufroma*180/pi, nufromb*180/pi, nufromecc*180/pi
 
@@ -219,7 +219,7 @@ def newtonraphsonkepler(ecc,M,guess,tolerence=.001):
 	while delta>tolerence:
 		Enext = Eprev + (M-Eprev+ecc*sin(Eprev))/(1-ecc*cos(Eprev))
 		delta = abs(Eprev-Enext)
-		print "Iteration %d: E=%.10f, delta=%.10f" % (num,Enext,delta)
+		print("Iteration %d: E=%.10f, delta=%.10f" % (num,Enext,delta))
 		num+=1
 		Eprev = Enext
 	return Enext
@@ -230,28 +230,28 @@ def rv2coe(Rijk,Vijk,debug=True):
 	r = linalg.norm(Rijk)
 	v = linalg.norm(Vijk)
 	if debug:
-		print "|R|: %f" % (r)
-		print "|V|: %f" % (v)
+		print("|R|: %f" % (r))
+		print("|V|: %f" % (v))
 
 	a = (2./r-v**2/mu_km)**-1.
 	ecc_vec = ((v**2-mu_km/r)*Rijk - dot(Rijk,Vijk)*Vijk)/mu_km
 	ecc = linalg.norm(ecc_vec)
 	if debug:
-		print "mu_km: %f" % (mu_km)
-		print "semimajor: %f" %(a)
-		print "ecc: %f" % (ecc)
+		print("mu_km: %f" % (mu_km))
+		print("semimajor: %f" %(a))
+		print("ecc: %f" % (ecc))
 	
 	#Angular Momentum
 	h_vec = cross(Rijk,Vijk)
 	h = linalg.norm(h_vec)
 	if debug:
-		print "angular mom: %f" % (h)
-		print "angular mom vec: [%f,%f,%f]" % (h_vec[0],h_vec[1],h_vec[2])
+		print("angular mom: %f" % (h))
+		print("angular mom vec: [%f,%f,%f]" % (h_vec[0],h_vec[1],h_vec[2]))
 
 	#Inclination
 	inc = arccos(dot(K,h_vec)/(linalg.norm(K)*h))
 	if debug:
-		print "inclination: %f" % (inc)
+		print("inclination: %f" % (inc))
 	
 	#Right Ascention of Ascending Node
 	n_vec = cross(K,h_vec) #node vector
@@ -260,9 +260,9 @@ def rv2coe(Rijk,Vijk,debug=True):
 	if n_vec[1] < 0.:
 		Omega = 2*pi-Omega
 	if debug:
-		print "n_vec [%f,%f,%f]" % (n_vec[0],n_vec[1],n_vec[2])
-		print "n: %f" % (n)
-		print "Omega: %f" %(Omega)
+		print("n_vec [%f,%f,%f]" % (n_vec[0],n_vec[1],n_vec[2]))
+		print("n: %f" % (n))
+		print("Omega: %f" %(Omega))
 
 	#Argument of periapse
 	w = arccos(dot(n_vec,ecc_vec)/(n*ecc))	
@@ -338,8 +338,8 @@ def coe2rv(a,ecc,i,Omega,w,nu,debug=True):
 	Vpqw = array([-1*alpha*sin(nu),alpha*(ecc+cos(nu)),0.])
 
 	if debug: 
-		print "Perifocal R (R_pqw): [%f,%f,%f]" % (Rpqw[0],Rpqw[1],Rpqw[2])
-		print "Perifocal V (V_pqw): [%f,%f,%f]" % (Vpqw[0],Vpqw[1],Vpqw[2])
+		print("Perifocal R (R_pqw): [%f,%f,%f]" % (Rpqw[0],Rpqw[1],Rpqw[2]))
+		print("Perifocal V (V_pqw): [%f,%f,%f]" % (Vpqw[0],Vpqw[1],Vpqw[2]))
 	Rijk = rot3(-1*Omega,rot1(-1*i,rot3(-1*w,Rpqw)))
 	Vijk = rot3(-1*Omega,rot1(-1*i,rot3(-1*w,Vpqw)))
 
@@ -436,11 +436,11 @@ def ecef2topo(R_ECEF, gdlat, lon, height, deg=True,):
 	#Convert to degrees for return
 	el = el*180./pi
 	beta = beta*180./pi
-	print "Beta from sin: %.5f" % (betasin*180./pi)
-	print "180-Beta from sin: %.5f" % (180.-betasin*180./pi)
-	print "Beta from cos: %.5f" % (betacos*180./pi)
-	print "-Beta from cos: %.5f" % (-1*betacos*180./pi)
-	print "Beta from tan: %.5f" % (beta)
+	print("Beta from sin: %.5f" % (betasin*180./pi))
+	print("180-Beta from sin: %.5f" % (180.-betasin*180./pi))
+	print("Beta from cos: %.5f" % (betacos*180./pi))
+	print("-Beta from cos: %.5f" % (-1*betacos*180./pi))
+	print("Beta from tan: %.5f" % (beta))
 	return array([el,beta,rng]),rho_topo
 
 def ecef2enu(R_ECEF,lat,lon):
@@ -708,10 +708,10 @@ def quadrant_check(from_sin,from_cos,deg=True):
 	elif other_sin == other_cos:
 		a = other_sin
 	else:
-		print "From sin: %f\n" % (from_sin)
-		print "From cos: %f\n" % (from_cos)
-		print "180-from_sin: %f\n" % (other_sin)
-		print "-1*from_cos: %f\n" % (other_cos)
+		print("From sin: %f\n" % (from_sin))
+		print("From cos: %f\n" % (from_cos))
+		print("180-from_sin: %f\n" % (other_sin))
+		print("-1*from_cos: %f\n" % (other_cos))
 		raise RuntimeError("Unable to determine quadrant!")
 	if not deg:
 		a = a*pi/180. #Convert to radians
