@@ -236,7 +236,7 @@ def print_passes(times,latitude,north_crossings,south_crossings):
 	pass
 
 
-def simple_passes(latitude):
+def simple_passes(latitude,half_or_full_orbit='half'):
 	
 	npts = len(latitude.flatten())
 	entered_north = []
@@ -251,7 +251,14 @@ def simple_passes(latitude):
 			entered_south.append(k)
 			#print "Entered Southern Hemisphere: ind:%d,lat:%.3f" % (k,latitude[k])
 
-	xings = entered_north+entered_south
+	if half_or_full_orbit is 'half':
+		xings = entered_north+entered_south
+	elif half_or_full_orbit is 'full':
+		if entered_north[0] < entered_south[0]:
+			xings = entered_north
+		elif entered_south[0] < entered_north[0]:
+			xings = entered_south
+		
 	xings.sort()
 	
 	return xings
