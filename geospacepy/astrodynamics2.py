@@ -629,11 +629,23 @@ def hour_angle(dt, lons, hours=False):
 	jd = ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second)
 	gst = jd2gst(jd,deg=False)
 
-	ha = np.degrees(gst + np.radians(lons) - ra)
+	ha = np.degrees(gst - np.radians(lons) - ra)
 
 	if hours:
 		ha = ha/180.*12
 
+	return ha
+
+def hour_angle_approx(dt,lons):
+	gamma = 2 * pi / 365 * (dt.timetuple().tm_yday - 1 + float(dt.hour - 12) / 24)
+	eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) \
+             	- 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma))
+	decl = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma) \
+    		- 0.006758 * cos(2 * gamma) + 0.000907 * sin(2 * gamma) \
+        	- 0.002697 * cos(3 * gamma) + 0.00148 * sin(3 * gamma)
+	time_offset = eqtime + 4 * lons
+	tst = dt.hour * 60 + dt.minute + dt.second / 60 + time_offset
+	ha = tst / 4 - 180.
 	return ha
 
 def solar_zenith_angle(dt,lats,lons):
@@ -656,11 +668,15 @@ def solar_zenith_angle(dt,lats,lons):
 	sun = ephem.Sun()
 	sun.compute(obs)
 	lat_s = ephem.degrees(sun.dec) # Subsolar lat
-	lon_s = ephem.degrees(sun.ra) - jd2gst(ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second),deg=True)
+	#lon_s = ephem.degrees(sun.ra) + 
+	gst = jd2gst(ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second),deg=True)
 	dec = ephem.degrees(sun.dec)/180.*np.pi # Declination in radians
+	ra = ephem.degrees(sun.ra)/180.*np.pi # Right Ascesion in radians
 	#sha = hour_angle(dt,lons)/180.*np.pi # hour_angle returns in degrees unless hours=True
 	#something is bugged in the hour angle function
-	sha = np.radians(lons)+(dt.hours+dt.minutes/60)/12*np.pi
+	phi = np.radians(lons)
+	#	sha = np.radians(gst) + phi + ra 
+	sha = hour_angle_approx(dt,lons)/180.*np.pi
 	lam = np.radians(lats)
 	return np.degrees(np.arccos(np.sin(lam)*np.sin(dec)+np.cos(lam)*np.cos(dec)*np.cos(sha)))
 
