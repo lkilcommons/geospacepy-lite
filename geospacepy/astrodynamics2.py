@@ -637,6 +637,10 @@ def hour_angle(dt, lons, hours=False):
 	return ha
 
 def hour_angle_approx(dt,lons):
+	"""
+	Returns hour angle in degrees
+	"""
+	lons[lons<0.] = lons[lons<0.]+360.
 	gamma = 2 * pi / 365 * (dt.timetuple().tm_yday - 1 + float(dt.hour - 12) / 24)
 	eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) \
              	- 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma))
@@ -648,7 +652,106 @@ def hour_angle_approx(dt,lons):
 	ha = tst / 4 - 180.
 	return ha
 
-def solar_zenith_angle(dt,lats,lons):
+def lon2lt(dt,lons):
+	"""
+	Converts and array of longitudes into solar local times
+	"""
+	phi = np.radians(lons)
+	#Returns in radians
+	gst,sdec,sra = solar_position_approx(dt)
+	#Calculate hour angle
+	sha = sra - (gst+phi)
+	#Convert to hours
+	lts = sha*12./np.pi+12.
+	return lts
+
+def solar_position_approx(dt,degrees=False):
+	"""
+	From C.T. Russell, (1971) "Geophysical Coordinate Transformations", 
+	Cosmic. Electrodyn. 2, 184-196
+	...
+	G.D. Mead (private communication) has written a simple subroutine to\
+	calculate the position of the Sun in GEI coordinates. It is accurate 
+	for years 1901 through 2099, to within 0.006 deg. The input is the 
+	year, day of year and seconds of the day in UT. The output is 
+	Greenwich Mean Sideral Time in degrees, the ecliptic longitude, 
+	apparent right ascension and declination of the Sun in degrees. 
+	The listing of this program follows. We note that the cartesian 
+	coordinates of the vector from the Earth to the Sun are:
+
+	  X = cos(SRASN) cos(SDEC)
+	  Y = sin(SRASN) cos(SDEC)
+	  Z = sin(SDEC)
+	  SUBROUTINE SUN(IYR, IDAY, SECS, GST, SLONG, SRASN, SDEC)
+	C PROGRAM TO CALCULATE SIDEREAL TIME AND POSITION OF THE SUN. 
+	C GOOD FOR YEARS 1901 THROUGH 2099. ACCURACY 0.006 DEGREE.
+	C INPUT IS IYR, IDAY (INTEGERS), AND SECS, DEFINING UN. TIME. 
+	C OUTPUT IS GREENWICH MEAN SIDEREAL TIME (GST) IN DEGREES,
+	C LONGITUDE ALONG ECLIPTIC (SLONG), AND APPARENT RIGHT ASCENSION
+	C AND DECLINATION (SRASN, SDEC) OF THE SUN, ALL IN DEGREES
+	  DATA RAD /57.29578/ 
+	  DOUBLE PRECISION DJ, FDAY 
+	  IF(IYR. LT. 1901. OR. IYR. GT. 2099) RETURN
+	  FDAY = SECS/86400
+	  DJ = 365* (IYR-1900) + (IYR-1901)/4 + IDAY + FDAY -0.5D0 
+	  T = DJ / 36525 
+	  VL = DMOD (279.696678 + 0.9856473354*DJ, 360.D0) 
+	  GST = DMOD (279.690983 + 0.9856473354*DJ + 360.*FDAY + 180., 360.D0)
+	  G = DMOD (358.475845 + 0.985600267*DJ, 360.D0) / RAD 
+	  SLONG = VL + (1.91946 -0.004789*T)*SIN(G) + 0.020094*SIN (2.*G) 
+	  OBLIQ = (23.45229 -0.0130125*T) / RAD 
+	  SLP = (SLONG -0.005686) / RAD 
+	  SIND = SIN (OBLIQ)*SIN (SLP) 
+	  COSD = SQRT(1.-SIND**2)
+	  SDEC = RAD * ATAN (SIND/COSD) 
+	  SRASN = 180. -RAD*ATAN2
+	  (COTAN (OBLIQ)*SIND/COSD, -COS (SLP)/COSD) 
+	  RETURN 
+	  END
+	"""
+	iyear = dt.year
+	iday = dt.timetuple().tm_yday
+	secs = dt.hour*3600.+dt.minute*60.+dt.second
+	fday = secs/86400.
+	dj = 365*(iyear-1900)+(iyear-1901)/4 + iday + fday - .5
+	t = dj/36525.
+	vl = np.mod(279.696678 + 0.9856473354*dj, 360)
+	gst = np.mod(279.690983 + 0.9856473354*dj + 360.*fday + 180., 360.)
+	g = np.mod(358.475845 + 0.985600267*dj, 360.) * np.pi/180.
+	slong = vl + (1.91946 -0.004789*t)*np.sin(g) + 0.020094*np.sin(2.*g) 
+	obliq = (23.45229 -0.0130125*t) * np.pi/180. 
+	slp = (slong - 0.005686) * np.pi/180.
+	sin_d = np.sin(obliq)*np.sin(slp)
+	cos_d = np.sqrt(1-sin_d**2)
+	sdec = np.arctan(sin_d/cos_d)
+	sransn = np.pi - np.arctan2(1/np.tan(obliq)*sin_d/cos_d,
+								-1*np.cos(slp)/cos_d)
+	#Since GST is in degrees convert declination and right ascension
+	if degrees:
+		sdec = sdec * 180./np.pi
+		sransn = sransn * 180./np.pi
+		return gst,sdec,sransn
+	else:
+		gst = np.radians(gst)
+		return gst,sdec,sransn
+
+def solar_zenith_angle(dt,lats,lons,degrees=True):
+	"""
+	Finds solar zenith angle using Russel solar position
+	"""
+	lam = np.radians(lats)
+	phi = np.radians(lons)
+	gst,sdec,sra = solar_position_approx(dt)
+	#Calculate hour angle
+	sha = sra - (gst+phi)
+	cossza = np.sin(lam)*np.sin(sdec) + np.cos(lam)*np.cos(sdec)*np.cos(sha)
+	if degrees:
+		return np.degrees(np.arccos(cossza))
+	else:
+		return np.arccos(cossza)
+
+
+def solar_zenith_angle_broken(dt,lats,lons,degrees=True):
 	"""
 	Finds the solar zenith angle of n geocentric lat,lon
 	locations
@@ -664,8 +767,12 @@ def solar_zenith_angle(dt,lats,lons):
 
 	"""
 	obs = ephem.Observer()
-	obs.lat,obs.lon,obs.date = 0.,0.,dt
+	obs.lat,obs.lon = 0.,0.
+	#obs.elev = -1*6371.2*1000. # Center of the earth
+	obs.date = dt
+	obs.epoch = dt.year
 	sun = ephem.Sun()
+	sun.epoch = dt.year
 	sun.compute(obs)
 	lat_s = ephem.degrees(sun.dec) # Subsolar lat
 	#lon_s = ephem.degrees(sun.ra) + 
@@ -675,10 +782,14 @@ def solar_zenith_angle(dt,lats,lons):
 	#sha = hour_angle(dt,lons)/180.*np.pi # hour_angle returns in degrees unless hours=True
 	#something is bugged in the hour angle function
 	phi = np.radians(lons)
-	#	sha = np.radians(gst) + phi + ra 
-	sha = hour_angle_approx(dt,lons)/180.*np.pi
+	sha = ra - (np.radians(gst) + phi) 
+	#sha = hour_angle_approx(dt,lons)/180.*np.pi
 	lam = np.radians(lats)
-	return np.degrees(np.arccos(np.sin(lam)*np.sin(dec)+np.cos(lam)*np.cos(dec)*np.cos(sha)))
+	cossza = np.sin(lam)*np.sin(dec)+np.cos(lam)*np.cos(dec)*np.cos(sha)
+	if degrees:
+		return np.degrees(np.arccos(cossza))
+	else:
+		return np.arccos(cossza)
 
 def terminator(dt,lat_space=1):
 	"""Find the longitude of the terminator latitudes lat_space apart with fixed time dt"""

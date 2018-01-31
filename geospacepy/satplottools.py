@@ -28,7 +28,7 @@ def dipole_tilt_angle(dts):
 	ISSN 0032-0633, http://dx.doi.org/10.1016/j.pss.2009.04.007.
 	"""
 	if isinstance(dts,np.ndarray):
-		original_shape = dts.shape
+		original_shape = np.shape(dts)
 		dts = dts.flatten().tolist()	
 	else:
 		dts = [dts] if not isinstance(dts,list) else dts
