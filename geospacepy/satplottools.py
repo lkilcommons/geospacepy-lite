@@ -1430,6 +1430,98 @@ def polarbinplot(ax,bin_edges,bin_values,hemisphere='N',lonorlt='lt',**kwargs):
 
 	return mappable
 
+def angle_difference(ang1,ang2,degorhour='hour'):
+    """Difference between two angles in degrees or hours (ang2-ang1), 
+    taking into account wrapping
+    """
+    ang2rad = np.pi/12. if degorhour=='hour' else np.pi/180.
+    return np.arctan2(np.sin(ang2*ang2rad-ang1*ang2rad), np.cos(ang2*ang2rad-ang1*ang2rad))/ang2rad
+
+def angle_midpoint(ang1,ang2,degorhour='hour'):
+    """
+    Midpoint between two angles in degrees or hours
+    """
+    return ang1 + angle_difference(ang1,ang2,degorhour=degorhour)/2.
+
+def polarbin_vectorplot(ax,bin_edges,bin_values_E,bin_values_N,
+							hemisphere='N',lonorlt='lt',color='black',
+							max_vec_len= 12.,max_magnitude= 1000.,
+							reference_vector_len= 500.,
+							reference_vector_label= "500nT",
+							alpha=.55,width=.35,zorder=10):
+	
+	#Find bin center lats and localtimes
+	lats = angle_midpoint(bin_edges[:,0],bin_edges[:,1],
+										degorhour='deg')
+	latlim = 50.
+
+	if lonorlt == 'lt':
+		degorhour_azi = 'hour'
+	elif lonorlt == 'lon':
+		degorhour_azi = 'deg'
+	else:
+		raise ValueError('Invalid lonorlt %s' % (lonorlt))
+
+	azis = angle_midpoint(bin_edges[:,2],bin_edges[:,3],
+										degorhour=degorhour_azi)
+
+	azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180.
+
+	r = 90.-np.abs(lats).flatten()
+	theta = azis.flatten()*azi2rad-np.pi/2
+
+	#calculate the vector magnitudes
+	magnitudes = sqrt(bin_values_E**2+bin_values_N**2).flatten()
+   
+	#calculate the scaling factors (the percentage of the maximum length each vector will be
+	#maximum length corresponds to a magnitude equal to data_range(2)
+   
+	sfactors = (magnitudes)/(max_magnitude)
+   
+	#normalize so each vector has unit magnitude
+	scaled_data_e = bin_values_E.flatten()/magnitudes;
+	scaled_data_n = bin_values_N.flatten()/magnitudes;
+   
+	#stretch all vectors to the maximum vector length and then scale them
+	#by each's individual scale factor
+	scaled_data_e = (scaled_data_e*sfactors)*max_vec_len;
+	scaled_data_n = (scaled_data_n*sfactors)*max_vec_len;
+   
+	if hemisphere=='N':
+		scaled_data_n = -1*scaled_data_n
+	elif hemisphere=='S':
+		scaled_data_n = scaled_data_n
+	else:
+		raise ValueError('Invalid Hemisphere %s (N or S)' % (hemisphere))
+
+	X = r*np.cos(theta)        
+	Y = r*np.sin(theta)
+
+	r_hat = column_stack((np.cos(theta),sin(theta)))
+	th_hat = column_stack((-1*np.sin(theta),np.cos(theta))) 
+
+	X1 = scaled_data_n*r_hat[:,0]+scaled_data_e*th_hat[:,0]    
+	Y1 = scaled_data_n*r_hat[:,1]+scaled_data_e*th_hat[:,1]   
+
+	print('X',X.shape,'Y',Y.shape,'X1',X1.shape,'Y1',Y1.shape)
+
+	ax.quiver(X,Y,X1,Y1,angles='xy',units='xy',
+				width=width,color=color,
+				scale_units='xy',scale=1,alpha=alpha,
+				zorder=zorder)
+	
+	#plot the reference arrow
+	ref_sfactor = reference_vector_len/max_magnitude
+	ref_X1 = (sqrt(reference_vector_len**2/2)/reference_vector_len*ref_sfactor)*max_vec_len
+	ref_Y1 = (sqrt(reference_vector_len**2/2)/reference_vector_len*ref_sfactor)*max_vec_len
+	ax.quiver(-abs(latlim)+15,-abs(latlim)+5,ref_X1,ref_Y1,
+				angles='xy',units='xy',width=.2,color=color,
+				scale_units='xy',scale=1,label=reference_vector_label,
+				zorder=zorder)
+	ax.text(-abs(latlim)+15,-abs(latlim)+5,reference_vector_label,
+				color='black',va='top',size=8)
+
+
 def rolling_window(a, window):
 	"""Make for the lack of a decent moving average"""
 	shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
