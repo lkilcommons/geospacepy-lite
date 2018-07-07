@@ -4,6 +4,10 @@
 
 Geospacepy is a small library of python functions for doing space science data analysis. It is also a dependency of several other applications.
 
+### Python Version WARNING ###
+
+Geospacepy was developed using Python 2.7, Python 3 support was added programmatically using 2to3 script. I haven't tested extensively using Python 3. Unit tests pass but test coverage is pretty spotty still.
+
 ### OMNIREADER ###
 
 I envision that the most useful part of this library to others will be the omnireader.py code. It provides an functionality for on-demand downloading and reading of solar wind data from [NASA OmniWeb](http://omniweb.gsfc.nasa.gov/).
