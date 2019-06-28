@@ -4,6 +4,14 @@
 
 Geospacepy is a small library of python functions for doing space science data analysis. It is also a dependency of several other applications.
 
+### Rules of the Road ###
+
+Geospacepy is MIT open source licensed software. The usual legal no-warranties, no-guarantees provisions apply. Though this software is indended for use in academic research it has not been peer-reviewed, there may be errors in calculations.  
+
+### Python Version WARNING ###
+
+Geospacepy was developed using Python 2.7, Python 3 support was added programmatically using 2to3 script. I haven't tested extensively using Python 3. Unit tests pass but test coverage is pretty spotty still.
+
 ### OMNIREADER ###
 
 I envision that the most useful part of this library to others will be the omnireader.py code. It provides an functionality for on-demand downloading and reading of solar wind data from [NASA OmniWeb](http://omniweb.gsfc.nasa.gov/).
