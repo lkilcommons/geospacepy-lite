@@ -345,8 +345,11 @@ class newell(omni_derived_var):
 		bt = np.sqrt(by**2+bz**2)
 		#Compute IMF clock angle
 		ca = np.arctan2(by,bz)
+		neg_ca = bt*np.cos(ca)*bz < 0
+		ca[neg_ca] = ca[net_ca] + np.pi
+		sin_ca = np.abs(np.sin(ca/2.))
 
-		newell = (vsw*1000.)**(4./3)*(bt*1.0e-9)**(2./3)*(np.sin(ca/2))**(8./3);
+		newell = (vsw*1000.)**(4./3)*(bt*1.0e-9)**(2./3)*(sin_ca)**(8./3);
 		self.varvals=newell
 		return newell
 
