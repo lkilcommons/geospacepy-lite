@@ -270,11 +270,12 @@ class omni_downloader(object):
 		remote_path,fn = '/'.join(remotefn.split('/')[:-1]),remotefn.split('/')[-1]
 		localfn = os.path.join(self.localdir,fn)
 		if not os.path.exists(localfn):
-			ftp = ftplib.FTP(self.ftpserv)
+			ftp = ftplib.FTP_TLS(self.ftpserv)
 			print('Connecting to OMNIWeb FTP server %s' % (self.ftpserv))
 			ftp.connect()
 			ftp.login()
-
+			ftp.prot_p() #switch to secure data connection
+			
 			#Change directory
 			ftp.cwd(remote_path)
 			print('Downloading file %s' % (remote_path+'/'+fn))
