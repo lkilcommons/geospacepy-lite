@@ -26,7 +26,7 @@ However the installation process for these utilities can be a bit daunting, so I
 
 ### WARNING ABOUT TEXT OMNIWEB DATA ###
 
-The text format of OMNIWeb data uses large numbers (e.g. 99999.9) to indicate missing data, and there is no metadata with the text data which identifies what values were used. There is an algorithm to 'guess' the fill value in the code but I can't guarantee it will always identify all fill values.
+The text format of OMNIWeb data uses large numbers (e.g. 99999.9) to indicate missing data, and there is no metadata with the text data which identifies what values were used.
 
 ### SPECIALDATETIME ###
 
