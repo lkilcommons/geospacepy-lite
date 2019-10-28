@@ -24,6 +24,10 @@ If you need efficient data reading from omnireader, I recommend installing:
 
 However the installation process for these utilities can be a bit daunting, so I have recently updated omnireader to also work with the standard OMNIWeb text files. If it does not detect SpacePy on your computer, it will fall back to using the text files. This is SLOWER than using the CDF files but will work.
 
+### WARNING ABOUT TEXT OMNIWEB DATA ###
+
+The text format of OMNIWeb data uses large numbers (e.g. 99999.9) to indicate missing data, and there is no metadata with the text data which identifies what values were used. There is an algorithm to 'guess' the fill value in the code but I can't guarantee it will always identify all fill values.
+
 ### SPECIALDATETIME ###
 
 This is a very basic set of utilities for handling numpy arrays of Python datetimes, and converting from and to other time formats, such as MATLAB datenumber, day-of-year, and Julian date. There are other tools which do this, but specialdatetime.py has the advantage of being very lightweight.
