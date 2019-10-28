@@ -162,9 +162,6 @@ class omni_txt_cdf_mimic_var(object):
 			self.attrs = {'FILLVAL':np.nan}
 			self.attrs['FILLVAL']=self.identify_fill()
 
-		if name == 'flow_speed':
-			self.identify_fill()
-
 		#if 'FILLVAL' in self.attrs and np.count_nonzero(self.data==self.attrs['FILLVAL'])>2:
 		#	pass
 		#else:

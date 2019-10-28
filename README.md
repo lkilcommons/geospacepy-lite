@@ -39,7 +39,6 @@ This is a library I made during a graduate-level astrodynamics course. It implem
 ### How do I get set up? ###
 
 * Clone the repository
-* Edit 'geospacepy_config.py' to paths appropriate for your filesystem (this determines where omnireader will download data to, among other things)
 * `python setup.py install`
 * `import geospacepy` into your code
 
