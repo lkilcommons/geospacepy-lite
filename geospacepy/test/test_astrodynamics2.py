@@ -6,7 +6,7 @@ import datetime,os
 
 def test_julian_date_matches_vallado():
 	"""
-	Test that the julian date function in astrodyanmics matches 
+	Test that the julian date function in astrodyanmics matches
 	an example from Vallado: Fundamentals of Astrodynamics and Applications
 	"""
 	#Test using example in vallado pp. 194
@@ -18,7 +18,7 @@ def test_julian_date_matches_vallado():
 
 def test_gregorian_date_matches_vallado():
 	"""
-	Test that the gregorian-julian date function in astrodyanmics matches 
+	Test that the gregorian-julian date function in astrodyanmics matches
 	an example from Vallado: Fundamentals of Astrodynamics and Applications
 	"""
 	#Test using example in vallado pp. 209
@@ -27,7 +27,7 @@ def test_gregorian_date_matches_vallado():
 	expected_dt = datetime.datetime(1995,6,8,20,18,3,703700)
 	delta_t = (dt-expected_dt).total_seconds()
 	#Better than millisecond accuracy, at least for this date!
-	assert abs(delta_t) < 1.0e-4 
+	assert abs(delta_t) < 1.0e-4
 
 def test_greenwich_siderial_time_matches_vallado():
 	y,mo,d,h,m,s = 1992,8,20,12,14,0
@@ -39,8 +39,8 @@ def test_greenwich_siderial_time_matches_vallado():
 def test_hour_angle_of_greenwich_at_noon_is_zero():
 	dt = datetime.datetime(2000,1,1,12,0,0)
 	lons=np.zeros((1,))
-	ha = astrodynamics2.hour_angle(dt,lons,hours=True)
-	assert (np.abs(ha)<.1)
+	ha = astrodynamics2.hour_angle_approx(dt,lons)
+	assert (np.abs(ha)<1)
 
 if __name__ == '__main__':
 	pytest.main()

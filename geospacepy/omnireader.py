@@ -16,7 +16,7 @@ except KeyboardInterrupt:
 	print(traceback.format_exc())
 	print(textwrap.dedent("""
 		------------IMPORTANT----------------------------
-		Unable to import spacepy. Will fall back to 
+		Unable to import spacepy. Will fall back to
 		using Omni text files, but I really recommend
 		installing spacepy and using the cdf format. It's
 		faster.
@@ -141,17 +141,17 @@ localdir = geospacepy.config['omnireader']['local_cdf_dir']
 
 class omni_txt_cdf_mimic_var(object):
 	"""
-	A class to mimic the interface to a CDF 
+	A class to mimic the interface to a CDF
 	variable
 	"""
-	def __init__(self,name,vardict,data,cadence,data_is_column=False): 
+	def __init__(self,name,vardict,data,cadence,data_is_column=False):
 		# Column of text data that
 		#is the same as this variable
 		self.name = name
 		self.cadence = cadence
 		self.column = vardict['column']
-		
-		if not data_is_column: 
+
+		if not data_is_column:
 			self.data = data[:,int(vardict['column'])]
 		else:
 			self.data = data
@@ -161,6 +161,9 @@ class omni_txt_cdf_mimic_var(object):
 		else:
 			self.attrs = {'FILLVAL':np.nan}
 			self.attrs['FILLVAL']=self.identify_fill()
+
+		if name == 'flow_speed':
+			self.identify_fill()
 
 		#if 'FILLVAL' in self.attrs and np.count_nonzero(self.data==self.attrs['FILLVAL'])>2:
 		#	pass
@@ -189,7 +192,7 @@ class omni_txt_cdf_mimic_var(object):
 			#Check all possible decimal locations
 			this_fill_chars = list(fill_no_decimal) #split into list of characters
 			for k in range(len(this_fill_chars)):
-				#A possible fill must begin and end with 9, 
+				#A possible fill must begin and end with 9,
 				#but can have a decimal in any of the intermediate
 				#values (e.g. 999 -> 9.9, .99, 99.)
 				this_fill_chars_with_dec = [this_fill_chars[i] if i!=k else '.' for i in range(len(this_fill_chars))]
@@ -205,8 +208,19 @@ class omni_txt_cdf_mimic_var(object):
 		print("Fillval for %s (column %d) was identified as %f, tabluated as %s" % (self.name,self.column,this_fill,str(expected_fill)))
 		return this_fill
 
+
+	def _nan_fill_datapoints(self,vardata):
+		fillval = self.attrs['FILLVAL']
+		if np.isfinite(fillval):
+			probably_fill = np.isclose(vardata,fillval,rtol=0.,atol=1.)
+			n_fill,n_total = np.count_nonzero(probably_fill),len(vardata)
+			print('NaNd {}/{} (fill was {})'.format(n_fill,n_total,fillval))
+			vardata[probably_fill] = np.nan
+		return vardata
+
 	def __getitem__(self,*args):
-		return self.data.__getitem__(*args)
+		vardata = self.data.__getitem__(*args)
+		return self._nan_fill_datapoints(vardata)
 
 class omni_txt_cdf_mimic(object):
 	"""
@@ -222,10 +236,10 @@ class omni_txt_cdf_mimic(object):
 			self.data = np.genfromtxt(omnitxt)
 		except:
 			print("Reading from %s" % (omnitxt))
-			
-		#Load the dictionaries that map CDF variable names in 
+
+		#Load the dictionaries that map CDF variable names in
 		#the omni CDFs to columns in the text files
-		cdfvars_meta = omnitxtcdf.metadata[cadence]['vars'] 
+		cdfvars_meta = omnitxtcdf.metadata[cadence]['vars']
 		self.vars = {varname:omni_txt_cdf_mimic_var(varname,cdfvars_meta[varname],self.data,cadence) for varname in cdfvars_meta}
 		self.attrs = omnitxtcdf.metadata[cadence]['attrs']
 		#Compute the equivalent to the CDF variable'Epoch', i.e. the time
@@ -239,9 +253,13 @@ class omni_txt_cdf_mimic(object):
 		epoch = special_datetime.doyarr2datetime(doy,year).flatten()
 		self.vars['Epoch'] = omni_txt_cdf_mimic_var('Epoch',epoch_vardict,epoch,cadence,data_is_column=True)
 
-					
+
 	def __getitem__(self,var):
-		data = self.vars[var]
+		try:
+			data = self.vars[var]
+		except KeyError:
+			print(self.vars.keys())
+			raise
 		return data
 
 class omni_downloader(object):
@@ -250,7 +268,7 @@ class omni_downloader(object):
 		self.cdf_or_txt = cdf_or_txt if spacepy_is_available else 'txt' # is set at top of file in imports
 		#self.cdf_or_txt =
 		self.ftpserv = 'spdf.gsfc.nasa.gov'
-		self.ftpdir = '/pub/data/omni/'	
+		self.ftpdir = '/pub/data/omni/'
 		#Hourly CDF are every six months, 5 minute are every month as are 1 min
 		if self.cdf_or_txt is 'cdf':
 			self.cadence_subdir = {'hourly':'omni_cdaweb/hourly','5min':'omni_cdaweb/hro_5min','1min':'omni_cdaweb/hro_1min'}
@@ -275,7 +293,7 @@ class omni_downloader(object):
 			ftp.connect()
 			ftp.login()
 			ftp.prot_p() #switch to secure data connection
-			
+
 			#Change directory
 			ftp.cwd(remote_path)
 			print('Downloading file %s' % (remote_path+'/'+fn))
@@ -285,9 +303,9 @@ class omni_downloader(object):
 			ftp.quit()
 
 		if self.cdf_or_txt is 'cdf':
-			return pycdf.CDF(localfn) 
+			return pycdf.CDF(localfn)
 		else:
-			return omni_txt_cdf_mimic(localfn,cadence)	
+			return omni_txt_cdf_mimic(localfn,cadence)
 
 class omni_derived_var(object):
 	"""
@@ -300,6 +318,18 @@ class omni_derived_var(object):
 		self.varvals = None # To hold computed so we don't recompute without needing to
 		self.attrs = dict()
 
+class juliandate(omni_derived_var):
+	"""Julian date of timestamp"""
+	def __init__(self,oi):
+		omni_derived_var.__init__(self,oi)
+		self.attrs['CATDESC'] = 'Julian date'
+		self.attrs['UNITS'] = 'days'
+
+	def __call__(self):
+		if self.varvals is None:
+			self.varvals = special_datetime.datetimearr2jd(oi['Epoch']).flatten()
+		return self.varvals
+
 class borovsky(omni_derived_var):
 	"""Borovsky solar wind coupling function"""
 
@@ -307,7 +337,7 @@ class borovsky(omni_derived_var):
 		omni_derived_var.__init__(self,*args,**kwargs)
 		self.attrs['CATDESC'] = 'Borovsky Solar Wind Coupling Function'
 		self.attrs['UNITS'] = 'nT km/s'
-		
+
 	def __call__(self):
 		#Short circut if already computed
 		if self.varvals is not None:
@@ -327,11 +357,11 @@ class borovsky(omni_derived_var):
 
 class newell(omni_derived_var):
 	"""Newell emperical solar wind coupling function"""
-	
+
 	def __init__(self,*args,**kwargs):
 		omni_derived_var.__init__(self,*args,**kwargs)
 		self.attrs['CATDESC'] = 'Newell Solar Wind Coupling Function'
-		self.attrs['UNITS'] = 'm/s^(4/3) T^(2/3)'	
+		self.attrs['UNITS'] = 'm/s^(4/3) T^(2/3)'
 
 	def __call__(self):
 		#Short circut if already computed
@@ -356,12 +386,12 @@ class newell(omni_derived_var):
 
 class knippjh(omni_derived_var):
 	"""Knipp Joule Heating Index (Old Version)"""
-	
+
 	def __init__(self,*args,**kwargs):
 		omni_derived_var.__init__(self,*args,**kwargs)
 		self.attrs['UNITS']='GW'
 		self.attrs['CATDESC'] = 'Knipp Joule Heating Index'
-		
+
 	def __call__(self):
 		#Short circut if already computed
 		if self.varvals is not None:
@@ -384,7 +414,7 @@ class knippjh(omni_derived_var):
 			lymod = 1.
 		else:
 			lymod = 0.
-		
+
 		#Paper uses absolute value of pcn and dst
 		PC = np.abs(self.oi['PC_N_INDEX']).flatten()
 		Dst = np.abs(self.oi['DST' if oi.cadence == 'hourly' else 'SYM_H']).flatten()
@@ -395,16 +425,16 @@ class knippjh(omni_derived_var):
 		# 4 Seasons
 		annual = np.logical_or(doy > 335.+lymod, doy < 31.)
 		jhindex[annual] = 24.89*PC[annual] + 3.41*PC[annual]**2 + .41*Dst[annual] + .0015*Dst[annual]**2
-		
+
 		#Winter is 21 October (294 for non-leap, 295 for leap) to 20
-		#February (DOY 51 for both non-leap and leap) 
+		#February (DOY 51 for both non-leap and leap)
 		winter = np.logical_or(doy > 294.+lymod, doy < 51.)
 		jhindex[winter] = 13.36*PC[winter] + 5.08*PC[winter]**2 + .47*Dst[winter] + .0011*Dst[winter]**2
-	   
+
 		#Summer is 21 April (DOY 111, 112 leap) - 20 August (DOY 232, 233 leap)
 		summer = np.logical_and(doy > 111.+lymod , doy < 232.+lymod)
 		jhindex[summer] = 29.27*PC[summer] + 8.18*PC[summer]**2 - .04*Dst[summer] + .0126*Dst[summer]**2
-		
+
 		#Equinox is 21 Feb (DOY 51) - 20 Apr (DOY 110, 111 leap)
 		# and 21 Aug (233, 234 leap) - 20 Oct (293 non-leap, 294 leap)
 		equinox = np.logical_or(
@@ -420,7 +450,7 @@ class knippjh(omni_derived_var):
 
 class omni_interval(object):
 	def __init__(self,startdt,enddt,cadence,silent=False,cdf_or_txt='cdf'):
-		#Just handles the possiblilty of having a read running between two CDFs 
+		#Just handles the possiblilty of having a read running between two CDFs
 		self.dwnldr = omni_downloader(cdf_or_txt=cdf_or_txt)
 		self.silent = silent #No messages
 		self.cadence = cadence
@@ -442,10 +472,11 @@ class omni_interval(object):
 		self.add_transform('KP',['hourly'],lambda x: x/10.,'Hourly Kp*10 -> Kp')
 		#Implement computed variables
 		self.computed = dict()
+		self.computed['juliandate']=juliandate(self)
 		self.computed['borovsky']=borovsky(self)
 		self.computed['newell']=newell(self)
 		self.computed['knippjh']=knippjh(self)
-		
+
 	def get_var_attr(self,var,att):
 		"""Get a variable attribute"""
 		if var in self.computed:
@@ -496,7 +527,7 @@ class omni_interval(object):
 
 	def add_transform(self,cdfvar,cadences,fcn,desc):
 		"""
-			Call some function to manipulate the returned data 
+			Call some function to manipulate the returned data
 			whenever a particular CDF variable is '__getitem__'d
 			Added to fix the obnoxious hourly 'KP' variable being Kp*10
 			source of confusion.
@@ -524,7 +555,7 @@ class omni_event(object):
 		self.jd = special_datetime.datetimearr2jd(self.interval['Epoch'])
 		self.label = '%s-%s' % (startdt.strftime('%m-%d-%Y'),enddt.strftime('%m-%d-%Y')) if label is None else label
 		self.interpolants = dict()
-		self.attrs = self.interval.attrs	
+		self.attrs = self.interval.attrs
 
 	def __getitem__(self,*args):
 		return self.interval.__getitem__(*args)
@@ -604,7 +635,7 @@ class omni_sea(object):
 			#Plot jittered points
 			if plot_events:
 				ax.plot(x.flatten()+jitter.flatten(),iy[i,:].flatten(),'.',
-					color='b' if 'color' not in kwargs else kwargs['color'], 
+					color='b' if 'color' not in kwargs else kwargs['color'],
 					zorder=5.,alpha=.1)
 		y_med,y_lq,y_uq = np.nanmedian(iy,axis=0),np.nanpercentile(iy,25,axis=0),np.nanpercentile(iy,75,axis=0)
 		lab = '' if self.name is None else '%s: ' % (self.name)
@@ -684,24 +715,24 @@ class omni_interval_delay_smooth(object):
     		return self.dts
     	else:
     		return self._lagged_smoothed(self.oi[varname])
-        
+
     def _mins2elements(self,jd,n_mins):
         """
         Calculate the number of elements
         of a time variable jd that has
-        units of days that corresponds 
+        units of days that corresponds
         to n_mins minutes.
         """
         delta_t = np.nanmedian(np.diff(jd*24.*60.))
         if delta_t <= 0.:
             raise RuntimeError('Negative or zero delta-t'
-                                +' (%f minutes) for avg/lag' % (delta_t)) 
+                                +' (%f minutes) for avg/lag' % (delta_t))
         n_elements = int(np.round(n_mins/delta_t))
         print('%d minutes convertes to %d elements' % (n_mins,n_elements))
         return n_elements
 
     def _delay(self,jd,y,n_mins):
-        """	
+        """
         Lag an array n_mins minutes
         relative to a time variable in units of days (jd)
         """
@@ -727,7 +758,7 @@ class omni_interval_delay_smooth(object):
     def _lagged_smoothed(self,y):
     	"""
     	Use class variables to define
-    	lag and smoothing interval and 
+    	lag and smoothing interval and
     	jd
     	"""
     	return self._backward_smooth(self.jds,
@@ -736,98 +767,5 @@ class omni_interval_delay_smooth(object):
 
 
 if __name__ == '__main__':
-	available_formats = ['cdf','txt'] if spacepy_is_available else ['txt']
-	for source_format in available_formats:
-		print("Producing superposed epoch plots")
-
-		import seaborn as sns
-		#Test on a few Storm Sudden Commencement Events
-		storm_sudden_commencement = [
-		[2007,11,19,18,10.3],
-		[2010,4,5,8,26],
-		[2010,5,28,2,57.2],
-		[2011,4,6,9,33],
-		[2011,6,4,20,44],
-		[2011,9,9,12,42],
-		[2011,9,17,3,43],
-		[2011,9,26,12,34.6],
-		[2011,10,24,18,31],
-		[2011,11,1,9,7.3]
-		]
-
-		sudden_impulse = [
-			[2006,4,28,1,16.8],
-			[2006,7,9,21,35.8],
-			[2007,7,20,6,17],
-			[2008,5,28,2,24.4],
-			[2008,11,24,23,51.1],
-			[2009,1,30,21,51.7],
-			[2009,3,3,6,2.4],
-			[2009,4,24,0,53.2],
-			[2009,5,28,5,19],
-			[2009,9,3,15,51.9],
-			[2011,6,17,2,39],
-			[2011,7,11,8,50.4]
-			]
-		
-
-		#Set defaults 
-		font = {'family' : 'normal',
-			'weight' : 'bold',
-			'size'   : 14}
-
-		mpl.rc('font',**font)
-		mpl.rc('xtick',labelsize=12)
-		mpl.rc('ytick',labelsize=12)
-		mpl.rc('axes',labelsize=12)
-		mpl.rc('axes',labelweight='bold')
-
-		ndays = 5
-		sea_ssc = omni_sea(storm_sudden_commencement,cadence='hourly',name='Sudden Commencement',ndays=ndays,cdf_or_txt=source_format)
-		sea_si = omni_sea(sudden_impulse,cadence='hourly',name='Sudden Impulse',ndays=ndays,cdf_or_txt=source_format)
-
-		ev = sea_ssc.events[-1]
-		print(ev['Epoch'][1:10])
-
-		f = pp.figure(figsize=(11,12))
-		#a1 = f.add_subplot(2,1,1)
-		a1 = f.add_subplot(6,1,1)
-		a2 = f.add_subplot(6,1,2)
-		a3 = f.add_subplot(6,1,3)
-		a4 = f.add_subplot(6,1,4)
-		a5 = f.add_subplot(6,1,5)
-		a6 = f.add_subplot(6,1,6)
-
-		pp.ion()
-		#sea_ssc.plot_individual(a1,'BZ_GSM')
-		sea_si.plot_stats(a1,'ABS_B',color='blue')
-		sea_ssc.plot_stats(a1,'ABS_B',color='red')
-		a1.xaxis.set_visible(False)
-
-		sea_si.plot_stats(a2,'BZ_GSM',color='blue')
-		sea_ssc.plot_stats(a2,'BZ_GSM',color='red')
-		a2.xaxis.set_visible(False)
-
-		sea_si.plot_stats(a3,'DST',color='blue')
-		sea_ssc.plot_stats(a3,'DST',color='red')
-		a3.xaxis.set_visible(False)
-
-		sea_si.plot_stats(a4,'F10_INDEX',color='blue')
-		sea_ssc.plot_stats(a4,'F10_INDEX',color='red')
-		a4.set_xlabel('Days Since Zero Epoch')
-
-		sea_si.plot_stats(a5,'AE',color='blue')
-		sea_ssc.plot_stats(a5,'AE',color='red')
-		a5.set_xlabel('Days Since Zero Epoch')	
-
-		sea_si.plot_stats(a6,'PC_N_INDEX',color='blue')
-		sea_ssc.plot_stats(a6,'PC_N_INDEX',color='red')
-		a6.set_xlabel('Days Since Zero Epoch')	
-		
-		f.suptitle('Superposed Epoch Analysis of \nSudden Impulse (N=%d) and Sudden Commencement (N=%d)' % (sea_si.nevents,sea_ssc.nevents))
-
-		print(str(sea_si.events[0].interval))
-		#pp.show()
-		#pp.pause(30)
-		f.savefig('omni_sea_si_ssc_%s.png' % (source_format))
+	pass
 

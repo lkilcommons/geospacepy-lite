@@ -47,8 +47,8 @@ def nan(shape):
 		raise ValueError('Bad shape input, must be tuple of length 2')
 
 	arr = numpy.empty(shape)
-	arr.fill(numpy.nan)
-	return arr
+ 	arr.fill(numpy.nan)
+ 	return arr
 
 def deduplicate(arr,column=0,terse=False):
 	"""

@@ -709,46 +709,46 @@ def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False,
 
 	#Labels    
 	tcolor = 'red'    
-	
-	r_text = 90-minlat+2; th_text = 3*pi/2
+
+	r_text = 90-minlat+1; th_text = 3*pi/2
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-1,y,'0',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'0',fontsize=fslt,color=tcolor,horizontalalignment='center',verticalalignment='top')
 		
-	r_text = 90-minlat+3; th_text = 7*pi/4
+	r_text = 90-minlat+4; th_text = 7*pi/4
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)            
-	ax.text(x-1,y,'3',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'3',fontsize=fslt,color=tcolor,horizontalalignment='center',verticalalignment='center')
 
-	r_text = 90-minlat+2; th_text = 0*pi/2;
+	r_text = 90-minlat+1; th_text = 0*pi/2;
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-1,y,'6',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'6',fontsize=fslt,color=tcolor,horizontalalignment='left',verticalalignment='center')
 
-	r_text = 90-minlat+2; th_text = pi/4;
+	r_text = 90-minlat+4; th_text = pi/4;
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-1,y,'9',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'9',fontsize=fslt,color=tcolor,horizontalalignment='center',verticalalignment='center')
  
-	r_text = 90-minlat+2; th_text = 1*pi/2;
+	r_text = 90-minlat+1; th_text = 1*pi/2;
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-1,y,'12',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'12',fontsize=fslt,color=tcolor,horizontalalignment='center',verticalalignment='bottom')
 	
-	r_text = 90-minlat+2; th_text = 3*pi/4;
+	r_text = 90-minlat+4; th_text = 3*pi/4;
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-1,y,'15',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'15',fontsize=fslt,color=tcolor,horizontalalignment='center',verticalalignment='center')
 
-	r_text = 90-minlat+2; th_text = 2*pi/2;
+	r_text = 90-minlat+1; th_text = 2*pi/2;
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-1,y,'18',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'18',fontsize=fslt,color=tcolor,horizontalalignment='right',verticalalignment='center')
 
-	r_text = 90-minlat+2; th_text = 5*pi/4;
+	r_text = 90-minlat+4; th_text = 5*pi/4;
 	x = r_text*cos(th_text)
 	y = r_text*sin(th_text)
-	ax.text(x-2,y,'21',fontsize=fslt,color=tcolor)
+	ax.text(x,y,'21',fontsize=fslt,color=tcolor,horizontalalignment='center',verticalalignment='center')
 
 	# line([0 0],[-50 50],'Color',[0.7 0.7 0.7],'LineWidth',1.5); 
 	# line([-50 50],[0 0],'Color',[0.7 0.7 0.7],'LineWidth',1.5)
@@ -1252,8 +1252,8 @@ def vector_component_plot(ax_e,ax_n,data,satname='dmsp',color='blue',latlim=-50.
 			t = datetime.datetime(2000,1,1)+datetime.timedelta(seconds=plot_data[d,0])
 			ax_e.text(X[d],Y[d],t.strftime('%X'),color=color,va='top',ha=timejustify,fontsize=fontsize,alpha=.75)
 			ax_n.text(X[d],Y[d],t.strftime('%X'),color=color,va='top',ha=timejustify,fontsize=fontsize,alpha=.75)   
-	return ax_e,ax_n 
-
+	return ax_e,ax_n
+	
 def greatCircleDist(location1,location2,lonorlt='lt'):
 	#Returns n angular distances in radians between n-by-2 numpy arrays
 	#location1, location2 (calculated row-wise so diff between 
@@ -1280,6 +1280,66 @@ def greatCircleDist(location1,location2,lonorlt='lt'):
 		b = (90-location2[:,0])/360*2*pi
 		C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
 	return arccos(cos(a)*cos(b)+sin(a)*sin(b)*cos(C))
+
+def circularOrbit(ut,ut1,lat1,azi1,ut2,lat2,azi2,lonorlt='lt'):
+	"""
+	Find latitude and longitude at time ut of
+	circular orbit including points (ut1,lat1,azi1)
+	and (ut2,lat2,azi2)
+	from
+	Aviation Formulary by Ed Williams
+	http://edwilliams.org/avform.htm#Intermediate
+	NOTE:
+	will not work if points 1 and 2 are exactly 180 degrees
+	apart because route between them is undefined
+	"""
+	wrappt = 24. if lonorlt=='lt' else 360.	
+	azi_high_check = lambda azi: azi-wrappt if azi>wrappt else azi
+	azi_low_check = lambda azi: azi+wrappt if azi<wrappt else azi
+	azi_check = lambda azi: azi_high_check(azi_low_check(azi))	
+	azi2lon = lambda azi: azi*180./12. if lonorlt=='lt' else azi	
+	lon2azi = lambda lon: lon*12./180. if lonorlt=='lt' else lon	
+	
+	#Bounds check and convert to lon
+	lon1=azi2lon(azi_check(azi1))
+	lon2=azi2lon(azi_check(azi2))
+	
+	lambda1,lambda2 = radians(lat1),radians(lat2)
+	phi1,phi2 = radians(lon1),radians(lon2)
+
+	#Calculate orbital period
+	#great circle distance with better rounding error for short angles
+	#http://edwilliams.org/avform.htm#Dist
+	gcdist = 2*arcsin(sqrt((sin((lambda1-lambda2)/2.))**2. \
+		+cos(phi1)*cos(phi2)*(sin((phi1-phi2)/2.))**2.))
+	#gcdist = arccos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon1-lon2))
+
+	gcdist = np.abs(gcdist)
+	delta_t = np.abs(ut2-ut1)
+	T = delta_t*(2*pi)/gcdist
+
+	f = (ut-ut1)/delta_t # f is percent of distance between point 1 and 2
+		
+	#f = f-floor(f) # -1 to 1
+	#f = 1+f if f < 0 else f # 0 to 1	
+	
+	#print('ut: {} lat: {} lt: {} lon: {}'.format(ut1,lat1,azi1,lon1))
+	#print('ut: {} lat: {} lt: {} lon: {}'.format(ut2,lat2,azi2,lon2))
+	#print('delta_t {} gcdist {} period {} mins '.format(delta_t,gcdist,T/60.))
+	
+	d = arccos(sin(lambda1)*sin(lambda2)+cos(lambda1)*cos(lambda2)*cos(phi1-phi2))
+	A = sin((1.-f)*d)/sin(d)
+	B = sin(f*d)/sin(d)
+	x = A*cos(lambda1)*cos(phi1)+B*cos(lambda2)*cos(phi2)
+	y = A*cos(lambda1)*sin(phi1)+B*cos(lambda2)*sin(phi2)
+	z = A*sin(lambda1)+B*sin(lambda2)
+
+	lat_f = degrees(arctan2(z, sqrt(x**2 + y**2)))
+	lon_f = degrees(arctan2(y,x))
+	azi_f = azi_check(lon2azi(lon_f))
+	#print('ut {} f {} lat {} lt {} lon {} '.format(ut,f,lat_f,azi_f,lon_f))
+		
+	return lat_f,azi_f
  
 def greatCircleMidpoint(location1,location2,angDist='compute',lonorlt='lt'):
 	#Finds the midpoint lat and lt or lon between two locations along a great circle arc
@@ -1511,15 +1571,15 @@ def polarbin_vectorplot(ax,bin_edges,bin_values_E,bin_values_N,
 				zorder=zorder)
 	
 	#plot the reference arrow
-	ref_sfactor = reference_vector_len/max_magnitude
+	ref_sfactor = float(reference_vector_len)/float(max_magnitude)
 	ref_X1 = (sqrt(reference_vector_len**2/2)/reference_vector_len*ref_sfactor)*max_vec_len
 	ref_Y1 = (sqrt(reference_vector_len**2/2)/reference_vector_len*ref_sfactor)*max_vec_len
-	ax.quiver(-abs(latlim)+15,-abs(latlim)+5,ref_X1,ref_Y1,
-				angles='xy',units='xy',width=.2,color=color,
+	ax.quiver(-abs(latlim)+15,-abs(latlim)+10,ref_X1,ref_Y1,
+				angles='xy',units='xy',width=width,color=color,
 				scale_units='xy',scale=1,label=reference_vector_label,
-				zorder=zorder)
-	ax.text(-abs(latlim)+15,-abs(latlim)+5,reference_vector_label,
-				color='black',va='top',size=8)
+				zorder=0.)
+	ax.text(-abs(latlim)+15,-abs(latlim)+10,reference_vector_label,
+				color='black',va='top',size=8,bbox={'alpha':0.})
 
 
 def rolling_window(a, window):

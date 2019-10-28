@@ -6,7 +6,6 @@ from numpy import *
 import numpy as np
 import matplotlib.pyplot as pp
 import itertools, datetime
-import ephem # Pyephem celestial ephemerides
 
 G = 6.67e-11 #N m^2/s^2
 m_earth = 5.9742e24 #kg
@@ -57,7 +56,7 @@ def rot_tests():
 	for func in [rot1,rot2,rot3]:
 		for vec in [array([1,0,0]),array([[1],[0],[0]]),array([1,0,0]).flatten()]:
 			print("Applying %s with angle=pi/2 to %s" % (func.__name__,str(vec)))
-			print("Result: %s" % (func(pi/2,vec))) 
+			print("Result: %s" % (func(pi/2,vec)))
 
 def convert(input,type,inputUnits,outputUnits):
 	#Create a dictionary of conversion factors
@@ -95,7 +94,7 @@ def orbitPlotter(ecc,p=nan,a=nan,inputUnits='earth radii',step=.01,planetaryRadi
 	ax.plot(planet_x,planet_y,'g-')
 	ax.set_xlabel(inputUnits)
 	ax.set_title('Trajectory Plot: eccentricity=%.2f, semiparameter=%.2f, semimajor=%.2f [%s]' % (ecc,p,a,inputUnits))
-	
+
 	return fig
 
 def truetoeccentric(nu,ecc,a=nan,b=nan,tolerence=.00001):
@@ -114,13 +113,13 @@ def truetoeccentric(nu,ecc,a=nan,b=nan,tolerence=.00001):
 	Efromb = arcsin(r*sin(nu)/b)
 	Efromecc = 2*arctan(sqrt((1-ecc)/(1+ecc))*tan(nu/2))
 
-	if abs(Efroma-Efromb) > tolerence: 
+	if abs(Efroma-Efromb) > tolerence:
 		print("Warning: Eccentric anomally from semimajor (cosine) is not within %f rad of to Eccentric anomally from semiminor (sine)" %(tolerence))
-	if abs(Efroma-Efromecc) > tolerence: 
+	if abs(Efroma-Efromecc) > tolerence:
 		print("Warning: Eccentric anomally from semimajor (cosine) is not within %f rad of to Eccentric anomally from eccentricity (tangent)" %(tolerence))
-	if abs(Efromb-Efromecc) > tolerence: 
+	if abs(Efromb-Efromecc) > tolerence:
 		print("Warning: Eccentric anomally from semiminor (cosine) is not within %f rad of to Eccentric anomally from eccentricity (tangent)" %(tolerence))
-	
+
 	return Efroma*180/pi, Efromb*180/pi, Efromecc*180/pi
 
 def eccentrictotrue(E,ecc,a=nan,b=nan,tolerence=.00001):
@@ -138,13 +137,13 @@ def eccentrictotrue(E,ecc,a=nan,b=nan,tolerence=.00001):
 	nufromb = arcsin(b*sin(E)/r)
 	nufromecc = 2*arctan(sqrt((1+ecc)/(1-ecc))*tan(E/2))
 
-	if abs(nufroma-nufromb) > tolerence: 
+	if abs(nufroma-nufromb) > tolerence:
 		print("Warning: True anomally from semimajor (cosine) is not within %f rad \n of Eccentric anomally from semiminor (sine)" %(tolerence))
-	if abs(nufroma-nufromecc) > tolerence: 
+	if abs(nufroma-nufromecc) > tolerence:
 		print("Warning: True anomally from semimajor (cosine) is not within %f rad \n of Eccentric anomally from eccentricity (tangent)" %(tolerence))
-	if abs(nufromb-nufromecc) > tolerence: 
+	if abs(nufromb-nufromecc) > tolerence:
 		print("Warning: True anomally from semiminor (cosine) is not within %f rad \n of Eccentric anomally from eccentricity (tangent)" %(tolerence))
-	
+
 	return nufroma*180/pi, nufromb*180/pi, nufromecc*180/pi
 
 def kepler(ecc,a,E=nan,M=nan,tminustp=nan,tolerence=.001,dist_units="ER"):
@@ -165,7 +164,7 @@ def kepler(ecc,a,E=nan,M=nan,tminustp=nan,tolerence=.001,dist_units="ER"):
 		a = a*1000.
 	else:
 		raise ValueError("Invalid dist_units value: %s, valid options are ER,m or km" % (dist_units))
-			
+
 	if ~isnan(E):
 		E = E*pi/180. #Radians
 	if ~isnan(M):
@@ -187,8 +186,8 @@ def kepler(ecc,a,E=nan,M=nan,tminustp=nan,tolerence=.001,dist_units="ER"):
 			#Now we have M and tminustp so we can solve for E using newton-raphson
 
 			#Use Algorithm 2 in Vallado to guess for E
-				
-			
+
+
 			if (M > -1*pi and M < 0) or M > pi:
 				guessE = M-ecc
 			else:
@@ -198,7 +197,7 @@ def kepler(ecc,a,E=nan,M=nan,tminustp=nan,tolerence=.001,dist_units="ER"):
 		else:
 			M = E-ecc*sin(E)
 			tminustp = M/n
-		return E*180/pi,M*180/pi,tminustp 
+		return E*180/pi,M*180/pi,tminustp
 	else:
 		raise ValueError('Must specify either M, E, or tminustp to solve keplers equation')
 		return (nan,nan,nan)
@@ -208,7 +207,7 @@ def between_minus_pi_and_pi(angle,inunit='radians'):
 		angle = angle*pi/180.
 	if angle > 2*pi:
 		angle = mod(angle,2*pi)
-	if angle > pi: 
+	if angle > pi:
 		angle = angle-2*pi
 	return angle
 
@@ -240,7 +239,7 @@ def rv2coe(Rijk,Vijk,debug=True):
 		print("mu_km: %f" % (mu_km))
 		print("semimajor: %f" %(a))
 		print("ecc: %f" % (ecc))
-	
+
 	#Angular Momentum
 	h_vec = cross(Rijk,Vijk)
 	h = linalg.norm(h_vec)
@@ -252,7 +251,7 @@ def rv2coe(Rijk,Vijk,debug=True):
 	inc = arccos(dot(K,h_vec)/(linalg.norm(K)*h))
 	if debug:
 		print("inclination: %f" % (inc))
-	
+
 	#Right Ascention of Ascending Node
 	n_vec = cross(K,h_vec) #node vector
 	n = linalg.norm(n_vec)
@@ -265,7 +264,7 @@ def rv2coe(Rijk,Vijk,debug=True):
 		print("Omega: %f" %(Omega))
 
 	#Argument of periapse
-	w = arccos(dot(n_vec,ecc_vec)/(n*ecc))	
+	w = arccos(dot(n_vec,ecc_vec)/(n*ecc))
 	if ecc_vec[2] < 0.:
 		w = 2*pi-w
 
@@ -280,7 +279,7 @@ def rv2coe(Rijk,Vijk,debug=True):
 	w = w*180/pi
 	nu = nu*180/pi
 
-	return a,ecc,inc,Omega,w,nu 
+	return a,ecc,inc,Omega,w,nu
 
 def readTLE(line1,line2,convertMeanMotion=True):
 	card1 = int(line1[0])
@@ -320,7 +319,7 @@ def coe2rv(a,ecc,i,Omega,w,nu,debug=True):
 	#All distances in km, all angles in degrees
 	#Follows Vallado 4th ed. pg. 125
 	mu_km =  mu/(1000**3)
-	
+
 	#All angles to radians
 	i = i*pi/180
 	Omega = Omega*pi/180
@@ -334,10 +333,10 @@ def coe2rv(a,ecc,i,Omega,w,nu,debug=True):
 	Rpqw = array([p*cos(nu)/(1+ecc*cos(nu)),
 					p*sin(nu)/(1+ecc*cos(nu)),
 					0.])
-	alpha = sqrt(mu_km/p)			 	
+	alpha = sqrt(mu_km/p)
 	Vpqw = array([-1*alpha*sin(nu),alpha*(ecc+cos(nu)),0.])
 
-	if debug: 
+	if debug:
 		print("Perifocal R (R_pqw): [%f,%f,%f]" % (Rpqw[0],Rpqw[1],Rpqw[2]))
 		print("Perifocal V (V_pqw): [%f,%f,%f]" % (Vpqw[0],Vpqw[1],Vpqw[2]))
 	Rijk = rot3(-1*Omega,rot1(-1*i,rot3(-1*w,Rpqw)))
@@ -353,18 +352,18 @@ def eci2ecef(R_ECI,theta_GST,deg=True):
 	#R_ECI is ECI cartesian vector
 	#Unit agnostic, use the deg switch to decide whether the angle will be degrees or radians
 	R_ECEF = rot3(theta_GST,R_ECI,deg=deg) #Keeping it simple, pipe the deg argument through to rot3
-	return R_ECEF 
+	return R_ECEF
 
 def ecef_cart2spherical(R_ECEF,deg=True):
 	#R_ECEF is the cartesian Earth Centered Earth Fixed vector in any units
 	#For clarity, function is not vectorized
 	R_ECEF = R_ECEF.flatten() #Make sure the vector is 1-d
-	r = sqrt(R_ECEF[0]**2+R_ECEF[1]**2+R_ECEF[2]**2) 
+	r = sqrt(R_ECEF[0]**2+R_ECEF[1]**2+R_ECEF[2]**2)
 	x = R_ECEF[0]
 	y = R_ECEF[1]
 	z = R_ECEF[2]
 	longitude = arctan2(y,x) #Longitude is angle in x,y plane
- 
+
 	latitude =  arcsin(z/r) #Latitude is angle z-ward from x,y plane
 	#Convert to degrees for return if deg switch on
 	if deg:
@@ -373,7 +372,7 @@ def ecef_cart2spherical(R_ECEF,deg=True):
 	return array([r,latitude,longitude])
 
 #Define an ECEF spherical to cartesian transform
-def ecef_spherical2cart(lat,lon,r,re=6371.2,deg=True): 
+def ecef_spherical2cart(lat,lon,r,re=6371.2,deg=True):
 	#Offer option to use custom earth radius in km
 	#Convert to radians if nessecary
 	if deg:
@@ -393,7 +392,7 @@ def ecef2eci(R_ECEF,theta_GST,deg=True):
 
 
 #Define some conversions between geocentric (spherical) and geodetic latitude
-def spherical2geodetic(gclat,deg=True,ecc_earth=.081819221456): 
+def spherical2geodetic(gclat,deg=True,ecc_earth=.081819221456):
 	#eccentricity from Vallado back cover
 	#Valid for points on earth surface only
 	if deg:
@@ -406,7 +405,7 @@ def spherical2geodetic(gclat,deg=True,ecc_earth=.081819221456):
 def geodetic2spherical(gdlat,deg=True,ecc_earth=.081819221456):
 	#Valid for points on earth surface only
 	if deg:
-		gdlat = gdlat*pi/180. 
+		gdlat = gdlat*pi/180.
 	gclat = arctan2(tan(gdlat),1./(1.-ecc_earth**2.))
 	if deg:
 		gclat = gdlat*180./pi
@@ -416,22 +415,22 @@ def geodetic2spherical(gdlat,deg=True,ecc_earth=.081819221456):
 def ecef2topo(R_ECEF, gdlat, lon, height, deg=True,):
 	#Assume input lat is geodetic, if it were geocentric/spherical, use above spherical2geodetic
 	#gdlat = geodetic2spherical(gdlat)
-	R_site_ecef = ecef_spherical2cart(gdlat,lon,height,deg=deg) 
+	R_site_ecef = ecef_spherical2cart(gdlat,lon,height,deg=deg)
 	#Find the ECEF vector of the site
 	rho_ecef = R_ECEF-R_site_ecef
 	#Compute ECEF range vector
-	rho_topo = rot3(lon,rho_ecef,deg=True) 
+	rho_topo = rot3(lon,rho_ecef,deg=True)
 	#Rotate range vector about Z-axis by longitude
-	rho_topo = rot2((90.-lat),rho_topo,deg=True) 
+	rho_topo = rot2((90.-lat),rho_topo,deg=True)
 	#Rotate range vector about y-axis by colatitude
-	el = arcsin(rho_topo[2]/linalg.norm(rho_topo)) 
+	el = arcsin(rho_topo[2]/linalg.norm(rho_topo))
 	#elevation is acos(rho_Z/|rho|), angle up from the SE plane
-	beta = pi-arctan2(rho_topo[1],rho_topo[0]) 
+	beta = pi-arctan2(rho_topo[1],rho_topo[0])
 	#Like theta for spherical coords, the azimuth is the angle of rho IN the SE plan
 	#But since it's referenced to local north instead of south, it's pi - atan(y/x)
 	betasin = arcsin(rho_topo[1]/sqrt(rho_topo[0]**2+rho_topo[1]**2))
 	betacos = arccos(-1*rho_topo[0]/sqrt(rho_topo[0]**2+rho_topo[1]**2))
-	rng = linalg.norm(rho_topo) 
+	rng = linalg.norm(rho_topo)
 	#The range is just the distance to the spacecraft from the site, so it's just the length of rho vector
 	#Convert to degrees for return
 	el = el*180./pi
@@ -446,7 +445,7 @@ def ecef2topo(R_ECEF, gdlat, lon, height, deg=True,):
 def ecef2enu(R_ECEF,lat,lon):
 	#Rotate a vector from ecef to local east, north, up
 	#coordinates centered at lat,lon
-	
+
 	lonrot = 90.+lon
 	#lonrot = lon
 	#lonrot[lonrot > 360.] = lonrot[lonrot>360.]-360.
@@ -454,7 +453,7 @@ def ecef2enu(R_ECEF,lat,lon):
 		lonrot = lonrot-360.
 
 	colat = 90.-lat
-	R_ENU = rot1(colat, 
+	R_ENU = rot1(colat,
 				rot3(lonrot,R_ECEF,deg=True)
 				,deg=True)
 
@@ -463,7 +462,7 @@ def ecef2enu(R_ECEF,lat,lon):
 def enu2ecef(R_ENU,lat,lon):
 	#Rotate a vector from ecef to local east, north, up
 	#coordinates centered at lat,lon
-	
+
 	lonrot = 90.+lon
 	#lonrot = lon
 	#lonrot[lonrot > 360.] = lonrot[lonrot>360.]-360.
@@ -526,7 +525,7 @@ def ymdhms2jd(year,mon,day,hr,mn,sc):
 	if not leapsecond:
 		t5 = ((sc/60.+mn)/60+hr)/24
 	else:
-		t5 = ((sc/61.+mn)/60+hr)/24	 	
+		t5 = ((sc/61.+mn)/60+hr)/24
 	#print t1,t2,t3,t4,t5
 	return t1-t2+t3+t4+t5
 
@@ -555,7 +554,7 @@ def jd2gst(JD_UT1,deg=True):
 	#Delta_UT1 is obtainable from the Earth Orientation Parameters (EOP)
 	T_UT1 = (JD_UT1-2451545.)/36525 #Get Julian centuries
 	#Note that this formula can be broken up into a two part (hours and seconds) version using a two part
-	#T_UT1. Where 876600 is multiplied by 3600., and in the exponentiation, the accuracy can be increased 
+	#T_UT1. Where 876600 is multiplied by 3600., and in the exponentiation, the accuracy can be increased
 	#by breaking up the T_UT1
 	theta_GST_s = 67310.54841+(876600.*3600.+8640184.812866)*T_UT1+.093104*T_UT1**2-6.2e-6*T_UT1**3
 	#Make sure abs(theta_GST) <= 86400 seconds
@@ -579,13 +578,13 @@ def groundtrack(year,decimaldoy,a,e,w,Omega,M0,n,timestep=60.,timelen=3*3600.,w_
 	#a is semimajor in km
 	#timelen is length of time to propagate orbit for in seconds
 	#timestep is the length of each time step in seconds
-	
+
 	ndeg = n * 180/pi #Convert n to degrees per second
 	nsteps = floor(timelen/timestep)
 	#Compute Julian Date
 	yr,mo,dy,hr,mn,sc = doy2ymdhms(year,decimaldoy)
 	jd = ymdhms2jd(yr,mo,dy,hr,mn,sc)
-	
+
 	#Init output arrays
 
 	lat_arr = zeros(nsteps+1,1)
@@ -594,10 +593,10 @@ def groundtrack(year,decimaldoy,a,e,w,Omega,M0,n,timestep=60.,timelen=3*3600.,w_
 	#Set initial values
 	M = M0
 	theta_GST = jd2gst(jd)
-	
+
 	for k in arange(nsteps):
 		E, M_out, tminustp = kepler(ecc,a,M=M)
-		nu_sin,nu_cos,nu_tan = eccentrictotrue(E,ecc,a=a) 
+		nu_sin,nu_cos,nu_tan = eccentrictotrue(E,ecc,a=a)
 		nu = quadrant_check(nu_sin,nu_cos)
 		#def coe2rv(a,ecc,i,Omega,w,nu,debug=True):
 		R_ECI,V_ECI = coe2rv(a,ecc,i,Omega,w,nu)
@@ -610,31 +609,6 @@ def groundtrack(year,decimaldoy,a,e,w,Omega,M0,n,timestep=60.,timelen=3*3600.,w_
 		M = M+n_deg*timestep
 
 	return lat_arr,lon_arr
-
-def hour_angle(dt, lons, hours=False):
-	# Modified to use ephem sun
-	# from algoithim on Stack Overflow: http://stackoverflow.com/questions/13314626/local-solar-time-function-from-utc-and-longitude
-	# @input UTC time (datetime)
-	# @input lon(float, degrees, negative west of Greenwich)
-	# @output hour angle, in degrees (float)
-
-	sun = ephem.Sun()
-	o = ephem.Observer()
-	o.lat,o.lon,o.date = 0.,0.,dt
-	sun.compute(o)
-	ra = sun.ra
-
-	#lons=-1.*lons
-
-	jd = ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second)
-	gst = jd2gst(jd,deg=False)
-
-	ha = np.degrees(gst - np.radians(lons) - ra)
-
-	if hours:
-		ha = ha/180.*12
-
-	return ha
 
 def hour_angle_approx(dt,lons):
 	"""
@@ -652,6 +626,7 @@ def hour_angle_approx(dt,lons):
 	ha = tst / 4 - 180.
 	return ha
 
+
 def lon2lt(dt,lons):
 	"""
 	Converts and array of longitudes into solar local times
@@ -667,46 +642,46 @@ def lon2lt(dt,lons):
 
 def solar_position_approx(dt,degrees=False):
 	"""
-	From C.T. Russell, (1971) "Geophysical Coordinate Transformations", 
+	From C.T. Russell, (1971) "Geophysical Coordinate Transformations",
 	Cosmic. Electrodyn. 2, 184-196
 	...
 	G.D. Mead (private communication) has written a simple subroutine to\
-	calculate the position of the Sun in GEI coordinates. It is accurate 
-	for years 1901 through 2099, to within 0.006 deg. The input is the 
-	year, day of year and seconds of the day in UT. The output is 
-	Greenwich Mean Sideral Time in degrees, the ecliptic longitude, 
-	apparent right ascension and declination of the Sun in degrees. 
-	The listing of this program follows. We note that the cartesian 
+	calculate the position of the Sun in GEI coordinates. It is accurate
+	for years 1901 through 2099, to within 0.006 deg. The input is the
+	year, day of year and seconds of the day in UT. The output is
+	Greenwich Mean Sideral Time in degrees, the ecliptic longitude,
+	apparent right ascension and declination of the Sun in degrees.
+	The listing of this program follows. We note that the cartesian
 	coordinates of the vector from the Earth to the Sun are:
 
 	  X = cos(SRASN) cos(SDEC)
 	  Y = sin(SRASN) cos(SDEC)
 	  Z = sin(SDEC)
 	  SUBROUTINE SUN(IYR, IDAY, SECS, GST, SLONG, SRASN, SDEC)
-	C PROGRAM TO CALCULATE SIDEREAL TIME AND POSITION OF THE SUN. 
+	C PROGRAM TO CALCULATE SIDEREAL TIME AND POSITION OF THE SUN.
 	C GOOD FOR YEARS 1901 THROUGH 2099. ACCURACY 0.006 DEGREE.
-	C INPUT IS IYR, IDAY (INTEGERS), AND SECS, DEFINING UN. TIME. 
+	C INPUT IS IYR, IDAY (INTEGERS), AND SECS, DEFINING UN. TIME.
 	C OUTPUT IS GREENWICH MEAN SIDEREAL TIME (GST) IN DEGREES,
 	C LONGITUDE ALONG ECLIPTIC (SLONG), AND APPARENT RIGHT ASCENSION
 	C AND DECLINATION (SRASN, SDEC) OF THE SUN, ALL IN DEGREES
-	  DATA RAD /57.29578/ 
-	  DOUBLE PRECISION DJ, FDAY 
+	  DATA RAD /57.29578/
+	  DOUBLE PRECISION DJ, FDAY
 	  IF(IYR. LT. 1901. OR. IYR. GT. 2099) RETURN
 	  FDAY = SECS/86400
-	  DJ = 365* (IYR-1900) + (IYR-1901)/4 + IDAY + FDAY -0.5D0 
-	  T = DJ / 36525 
-	  VL = DMOD (279.696678 + 0.9856473354*DJ, 360.D0) 
+	  DJ = 365* (IYR-1900) + (IYR-1901)/4 + IDAY + FDAY -0.5D0
+	  T = DJ / 36525
+	  VL = DMOD (279.696678 + 0.9856473354*DJ, 360.D0)
 	  GST = DMOD (279.690983 + 0.9856473354*DJ + 360.*FDAY + 180., 360.D0)
-	  G = DMOD (358.475845 + 0.985600267*DJ, 360.D0) / RAD 
-	  SLONG = VL + (1.91946 -0.004789*T)*SIN(G) + 0.020094*SIN (2.*G) 
-	  OBLIQ = (23.45229 -0.0130125*T) / RAD 
-	  SLP = (SLONG -0.005686) / RAD 
-	  SIND = SIN (OBLIQ)*SIN (SLP) 
+	  G = DMOD (358.475845 + 0.985600267*DJ, 360.D0) / RAD
+	  SLONG = VL + (1.91946 -0.004789*T)*SIN(G) + 0.020094*SIN (2.*G)
+	  OBLIQ = (23.45229 -0.0130125*T) / RAD
+	  SLP = (SLONG -0.005686) / RAD
+	  SIND = SIN (OBLIQ)*SIN (SLP)
 	  COSD = SQRT(1.-SIND**2)
-	  SDEC = RAD * ATAN (SIND/COSD) 
+	  SDEC = RAD * ATAN (SIND/COSD)
 	  SRASN = 180. -RAD*ATAN2
-	  (COTAN (OBLIQ)*SIND/COSD, -COS (SLP)/COSD) 
-	  RETURN 
+	  (COTAN (OBLIQ)*SIND/COSD, -COS (SLP)/COSD)
+	  RETURN
 	  END
 	"""
 	iyear = dt.year
@@ -718,8 +693,8 @@ def solar_position_approx(dt,degrees=False):
 	vl = np.mod(279.696678 + 0.9856473354*dj, 360)
 	gst = np.mod(279.690983 + 0.9856473354*dj + 360.*fday + 180., 360.)
 	g = np.mod(358.475845 + 0.985600267*dj, 360.) * np.pi/180.
-	slong = vl + (1.91946 -0.004789*t)*np.sin(g) + 0.020094*np.sin(2.*g) 
-	obliq = (23.45229 -0.0130125*t) * np.pi/180. 
+	slong = vl + (1.91946 -0.004789*t)*np.sin(g) + 0.020094*np.sin(2.*g)
+	obliq = (23.45229 -0.0130125*t) * np.pi/180.
 	slp = (slong - 0.005686) * np.pi/180.
 	sin_d = np.sin(obliq)*np.sin(slp)
 	cos_d = np.sqrt(1-sin_d**2)
@@ -750,63 +725,6 @@ def solar_zenith_angle(dt,lats,lons,degrees=True):
 	else:
 		return np.arccos(cossza)
 
-
-def solar_zenith_angle_broken(dt,lats,lons,degrees=True):
-	"""
-	Finds the solar zenith angle of n geocentric lat,lon
-	locations
-
-	From wikipedia (sigh...)
-
-	cos(SZA) = sin(glat)sin(dec)+cos(glat)cos(dec)cos(slt/12*pi)
-	
-	where: 
-		glat is the geocentric latitude
-		dec is the solar declination
-		slt is the solar local time in hours
-
-	"""
-	obs = ephem.Observer()
-	obs.lat,obs.lon = 0.,0.
-	#obs.elev = -1*6371.2*1000. # Center of the earth
-	obs.date = dt
-	obs.epoch = dt.year
-	sun = ephem.Sun()
-	sun.epoch = dt.year
-	sun.compute(obs)
-	lat_s = ephem.degrees(sun.dec) # Subsolar lat
-	#lon_s = ephem.degrees(sun.ra) + 
-	gst = jd2gst(ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second),deg=True)
-	dec = ephem.degrees(sun.dec)/180.*np.pi # Declination in radians
-	ra = ephem.degrees(sun.ra)/180.*np.pi # Right Ascesion in radians
-	#sha = hour_angle(dt,lons)/180.*np.pi # hour_angle returns in degrees unless hours=True
-	#something is bugged in the hour angle function
-	phi = np.radians(lons)
-	sha = ra - (np.radians(gst) + phi) 
-	#sha = hour_angle_approx(dt,lons)/180.*np.pi
-	lam = np.radians(lats)
-	cossza = np.sin(lam)*np.sin(dec)+np.cos(lam)*np.cos(dec)*np.cos(sha)
-	if degrees:
-		return np.degrees(np.arccos(cossza))
-	else:
-		return np.arccos(cossza)
-
-def terminator(dt,lat_space=1):
-	"""Find the longitude of the terminator latitudes lat_space apart with fixed time dt"""
-	sun = ephem.Sun()
-	sun.compute(dt)
-	#Compute subsolar latitude and longitude
-	lat_s = ephem.degrees(sun.g_dec) # Subsolar lat
-	lon_s = ephem.degrees(sun.g_asc) - jd2gst(ymdhms2jd(dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second),deg=True)
-	#Solve the terminator equation for all latitudes for which there is a terminator -(90-subsolar_lat) to 90-subsolar_lat
-	lats = np.arange(-1*(90.-lat_s),(90.-lat_s)+lat_space,lat_space)
-	cps = np.cos(lon_s/180.*np.pi)
-	sps = np.sin(lon_s/180.*np.pi)
-	#Lat_terminator - lat_subsolar point
-	dl = (lats-lat_s)/180.*np.pi
-	lons = np.atan2(-1*cps,sps*cos(dl))
-	return lats,lons
-
 def quadrant_check(from_sin,from_cos,deg=True):
 	if not deg:
 		#Convert to deg
@@ -825,7 +743,7 @@ def quadrant_check(from_sin,from_cos,deg=True):
 	if from_cos < 0:
 		from_cos = from_cos+360.
 
-	#Iterate through all possible combinations	
+	#Iterate through all possible combinations
 	if from_sin == from_cos:
 		a = from_sin
 	elif other_sin == from_cos:
