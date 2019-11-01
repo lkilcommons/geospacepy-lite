@@ -22,7 +22,7 @@ If you need efficient data reading from omnireader, I recommend installing:
 
 2. [Spacepy](https://pypi.python.org/pypi/SpacePy), for it's pyCDF python interface to the NASA CDF Library
 
-If geospacepy-lite does not detect SpacePy on your computer, it will fall back to using the ASCII text files. This is SLOWER than using the CDF files.
+If geospacepy-lite does not detect SpacePy on your computer, it will use the NASA OMNIWeb ASCII text files.
 
 ### SPECIALDATETIME ###
 
