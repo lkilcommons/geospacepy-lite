@@ -16,13 +16,13 @@ Geospacepy was developed using Python 2.7, Python 3 support was added programmat
 
 I envision that the most useful part of this library to others will be the omnireader.py code. It provides an functionality for on-demand downloading and reading of solar wind data from [NASA OmniWeb](http://omniweb.gsfc.nasa.gov/).
 
-If you need efficient data reading from omnireader, I recommend installing:
+If you need fast OMNI data reading I recommend installing:
 
 1. [The NASA CDF Library](http://cdf.gsfc.nasa.gov/)
 
 2. [Spacepy](https://pypi.python.org/pypi/SpacePy), for it's pyCDF python interface to the NASA CDF Library
 
-However the installation process for these utilities can be a bit daunting, so I have recently updated omnireader to also work with the standard OMNIWeb text files. If it does not detect SpacePy on your computer, it will fall back to using the text files. This is SLOWER than using the CDF files but will work.
+If geospacepy-lite does not detect SpacePy on your computer, it will use the NASA OMNIWeb ASCII text files.
 
 ### SPECIALDATETIME ###
 
@@ -36,11 +36,10 @@ This is my plotting library. It builds on the functionality provided by matplotl
 
 This is a library I made during a graduate-level astrodynamics course. It implements a few of the basics algorithms such as a very basic ECI-to-ECEF, as described in Vallado, Fundamentals for Astrodynamics and Applications. 
 
-### How do I get set up? ###
+### Installation Instructions ###
 
 * Clone the repository
 * `python setup.py install`
-* `import geospacepy` into your code
 
 Example code using omnireader:
 ```{python}
@@ -58,7 +57,6 @@ t = omniInt['Epoch'] #datetime timestamps
 By,Bz = omniInt['BY_GSM'],omniInt['BZ_GSM']
 
 ```
-
 ### Who do I talk to? ###
 
 * This repository was created and is managed by Liam M. Kilcommons at CU Boulder
