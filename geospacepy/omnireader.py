@@ -211,7 +211,10 @@ class omni_txt_cdf_mimic_var(object):
         if np.isfinite(fillval):
             probably_fill = np.isclose(vardata,fillval,rtol=0.,atol=1.)
             n_fill,n_total = np.count_nonzero(probably_fill),len(vardata)
-            print('NaNd {}/{} (fill was {})'.format(n_fill,n_total,fillval))
+            print('{} NaNd {}/{} (fill was {})'.format(self.name,
+            											n_fill,
+            											n_total,
+            											fillval))
             vardata[probably_fill] = np.nan
         return vardata
 
