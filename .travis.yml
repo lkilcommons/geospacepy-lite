@@ -23,7 +23,7 @@ install:
   - conda info -a
 
   # scipy doesn't pip build on Python 2.7 anymore
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION scipy
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION scipy matplotlib
   - conda activate test-environment
   - python setup.py install
 # command to run tests
