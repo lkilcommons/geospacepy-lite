@@ -1,5 +1,7 @@
 # Geospacepy #
 
+[![Build Status](https://travis-ci.org/lkilcommons/geospacepy-lite.svg?branch=master)](https://travis-ci.org/lkilcommons/geospacepy-lite)
+
 ### What is this repository for? ###
 
 Geospacepy is a small library of python functions for doing space science data analysis. It is also a dependency of several other applications.
