@@ -309,7 +309,7 @@ class omni_downloader(object):
             headers = head.headers
             content_type = headers.get('content-type')
             if content_type is not None:
-                if 'html' in content_type.lower()
+                if 'html' in content_type.lower():
                     raise RuntimeError(('Expected {} to be a file, but '.format(url)
                                        +'content_type is html. Headers were:\n'
                                        +'{}'.format(headers)))
