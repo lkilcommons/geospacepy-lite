@@ -1,6 +1,4 @@
-import sys, os, copy, textwrap, datetime, subprocess, ftplib, traceback
-
-from geospacepy import special_datetime
+import sys, os, copy, textwrap, datetime, subprocess, ftplib, traceback, requests
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
@@ -135,6 +133,7 @@ except ImportError:
 # z: CDF_REAL4 [8928]
 # >
 import geospacepy
+from geospacepy import special_datetime
 from geospacepy import omnitxtcdf
 
 localdir = geospacepy.config['omnireader']['local_cdf_dir']
@@ -263,12 +262,12 @@ class omni_txt_cdf_mimic(object):
         return data
 
 class omni_downloader(object):
-    def __init__(self,cdf_or_txt='cdf'):
+    def __init__(self,cdf_or_txt='cdf',force_download=False):
         self.localdir = localdir
         self.cdf_or_txt = cdf_or_txt if spacepy_is_available else 'txt' # is set at top of file in imports
-        #self.cdf_or_txt =
+        self.force_download = force_download
         self.ftpserv = 'spdf.gsfc.nasa.gov'
-        self.ftpdir = '/pub/data/omni/'
+        self.ftpdir = '/pub/data/omni'
         #Hourly CDF are every six months, 5 minute are every month as are 1 min
         if self.cdf_or_txt is 'cdf':
             self.cadence_subdir = {'hourly':'omni_cdaweb/hourly','5min':'omni_cdaweb/hro_5min','1min':'omni_cdaweb/hro_1min'}
@@ -287,25 +286,52 @@ class omni_downloader(object):
         remotefn = self.ftpdir+'/'+self.cadence_subdir[cadence]+'/'+self.filename_gen[cadence](dt)
         remote_path,fn = '/'.join(remotefn.split('/')[:-1]),remotefn.split('/')[-1]
         localfn = os.path.join(self.localdir,fn)
-        if not os.path.exists(localfn):
-            ftp = ftplib.FTP_TLS(self.ftpserv)
-            print('Connecting to OMNIWeb FTP server %s' % (self.ftpserv))
-            ftp.connect()
-            ftp.login()
-            ftp.prot_p() #switch to secure data connection
+        if not os.path.exists(localfn) or self.force_download:
 
-            #Change directory
-            ftp.cwd(remote_path)
-            print('Downloading file %s' % (remote_path+'/'+fn))
-            with open(localfn,'wb') as f:
-                ftp.retrbinary('RETR ' + fn, f.write)
-            print("Saved as %s" % (localfn))
-            ftp.quit()
+            # ftp = ftplib.FTP_TLS(self.ftpserv)
+            # print('Connecting to OMNIWeb FTP server %s' % (self.ftpserv))
+            # ftp.connect()
+            # ftp.login()
+            # ftp.prot_p() #switch to secure data connection
 
-        if self.cdf_or_txt is 'cdf':
-            return pycdf.CDF(localfn)
-        else:
+            # #Change directory
+            # ftp.cwd(remote_path)
+            # print('Downloading file %s' % (remote_path+'/'+fn))
+            # with open(localfn,'wb') as f:
+            #     ftp.retrbinary('RETR ' + fn, f.write)
+            # print("Saved as %s" % (localfn))
+            # ftp.quit()
+
+            url = 'https://'+self.ftpserv+remotefn
+            print(url)
+
+            head = requests.head(url,allow_redirects=True)
+            headers = head.headers
+            content_type = headers.get('content-type')
+            if content_type is not None:
+                if 'html' in content_type.lower()
+                    raise RuntimeError(('Expected {} to be a file, but '.format(url)
+                                       +'content_type is html. Headers were:\n'
+                                       +'{}'.format(headers)))
+
+            response = requests.get(url,allow_redirects=True)
+
+            if self.cdf_or_txt == 'txt':
+                try:
+                    datastr = str(response.content,'utf-8') # Py 3
+                except TypeError:
+                    datastr = str(response.content) # Py 2
+                with open(localfn,'w') as f:
+                    f.write(datastr)
+
+            elif self.cdf_or_txt == 'cdf':
+                with open(localfn,'wb') as f:
+                    f.write(response.content)
+
+        if self.cdf_or_txt == 'txt':
             return omni_txt_cdf_mimic(localfn,cadence)
+        elif self.cdf_or_txt == 'cdf':
+            return pycdf.CDF(localfn)
 
 class omni_derived_var(object):
     """
@@ -449,9 +475,9 @@ class knippjh(omni_derived_var):
         return jhindex
 
 class omni_interval(object):
-    def __init__(self,startdt,enddt,cadence,silent=False,cdf_or_txt='cdf'):
+    def __init__(self,startdt,enddt,cadence,silent=False,cdf_or_txt='cdf',force_download=False):
         #Just handles the possiblilty of having a read running between two CDFs
-        self.dwnldr = omni_downloader(cdf_or_txt=cdf_or_txt)
+        self.dwnldr = omni_downloader(cdf_or_txt=cdf_or_txt,force_download=force_download)
         self.silent = silent #No messages
         self.cadence = cadence
         self.startdt = startdt

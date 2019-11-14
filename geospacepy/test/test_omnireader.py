@@ -4,6 +4,8 @@ import numpy as np
 from numpy import testing as nptest
 import datetime,os,pkgutil
 
+print(omnireader.__file__)
+
 @pytest.fixture(params=['hourly','5min','1min'],
     ids=['hourly','5min','1min'])
 def example_omni_interval(request):
@@ -23,7 +25,7 @@ def test_omnireader_can_download_txt():
     we have a sane local directory for storing files
     """
     dt = datetime.datetime(2005,1,1)
-    od = omnireader.omni_downloader(cdf_or_txt='txt')
+    od = omnireader.omni_downloader(cdf_or_txt='txt',force_download=True)
     fakecdf = od.get_cdf(dt,'5min')
     downloaded_txt = os.path.join(od.localdir,od.filename_gen['5min'](dt))
     assert os.path.exists(downloaded_txt)
@@ -41,8 +43,16 @@ def omni_interval_txtcdf_comparison(request):
     """
     cadence = request.param
     dt = datetime.datetime(2006,3,14)
-    oiformats = {'cdf':omnireader.omni_interval(dt,dt+datetime.timedelta(days=1),cadence,cdf_or_txt='cdf'),
-                'txt':omnireader.omni_interval(dt,dt+datetime.timedelta(days=1),cadence,cdf_or_txt='txt')}
+    omni_interval_args = (dt,dt+datetime.timedelta(days=1),cadence)
+    oiformats = {
+                'cdf':omnireader.omni_interval(*omni_interval_args,
+                                                    cdf_or_txt='cdf',
+                                                    force_download=True),
+
+                'txt':omnireader.omni_interval(*omni_interval_args,
+                                                    cdf_or_txt='txt',
+                                                    force_download=True)
+                }
     return oiformats
 
 @pytest.mark.skipif(pkgutil.find_loader('spacepy') is None,
@@ -53,7 +63,7 @@ def test_omnireader_can_download_cdf():
     we have a sane local directory for storing files
     """
     dt = datetime.datetime(2005,1,1)
-    od = omnireader.omni_downloader()
+    od = omnireader.omni_downloader(cdf_or_txt='cdf',force_download=True)
     cdf = od.get_cdf(dt,'5min')
     downloaded_cdf = os.path.join(od.localdir,os.path.split(od.filename_gen['5min'](dt))[-1])
     assert os.path.exists(downloaded_cdf)
