@@ -6,6 +6,7 @@ from numpy import *
 import numpy as np
 import matplotlib.pyplot as pp
 import itertools, datetime
+from geospacepy.special_datetime import jd2datetime,datetime2jd
 
 G = 6.67e-11 #N m^2/s^2
 m_earth = 5.9742e24 #kg
@@ -473,81 +474,6 @@ def enu2ecef(R_ENU,lat,lon):
     R_ECEF = rot1(-1*colat*pi/180., rot3(-1*lonrot*pi/180.,R_ENU) )
     return R_ECEF
 
-#Compute the theta_GST from Year and fractional day of year
-def doy2ymdhms(year,doy):
-    #Not vectorized
-    #January - 31 Days
-    #February - 28 Days (Unless leap year - 29 Days)
-    #March - 31 Days
-    #April - 30 Days
-    #May - 31 Days
-    #June - 30 Days
-    #July - 31 Days
-    #August - 31 Days
-    #September - 30 Days
-    #October - 31 Days
-    #November - 30 Days
-    #December - 31 Days
-    if len(doy)>1:
-        raise ValueError('Not Vectorized!')
-    decimaldoy = doy-floor(doy)
-    doy = floor(doy)
-
-    mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Nov','Dec']
-    ndays = array([31,28,31,30,31,30,31,31,30,31,30,31])
-    if mod(year,4) == 0:
-        ndays[2] = 29
-    doys = [sum(ndays[0:k]) for k in arange(len(ndays))]
-    doys[0] += 1 #Add the first day in january since we're not zero based
-    diffdoys = diffdoys-doy
-    for (j,diffdoy) in enumerate(diffdoys):
-        if diffdoy < ndays[j] and diffdoy > 0:
-            mo = j
-            d = diffdoy
-            break
-    #Hour, Minute, Second parse
-    h = floor(decimaldoy*24)
-    mn = floor(decimaldoy*24*60)
-    s = floor(decimaldoy*24*60*60)
-    return y,mo,d,h,mn,s
-
-def ymdhms2jd(year,mon,day,hr,mn,sc):
-    #Takes UTC ymdhms time and returns julian date
-    #FIXME: Add leap second support
-    leapsecond = False
-    if year < 1900:
-        raise ValueError('Year must be 4 digit year')
-    t1 = 367.*year
-
-    t2 = int(7.*(year+int((mon+9.)/12.))/4.)
-    t3 = int(275.*mon/9.)
-    t4 = day + 1721013.5
-    if not leapsecond:
-        t5 = ((sc/60.+mn)/60+hr)/24
-    else:
-        t5 = ((sc/61.+mn)/60+hr)/24
-    #print t1,t2,t3,t4,t5
-    return t1-t2+t3+t4+t5
-
-def jd2ymdhms(jd):
-    dt = jd2datetime(jd)
-    return dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
-
-def jd2datetime(jd):
-    #Takes julian date and returns datetime.datetime in UTC
-
-    #The inverse of above, from Vallado pp 208. (algorithm 22)
-    T1900 = (jd-2415019.5)/365.25
-    year = 1900+int(T1900)
-    leapyrs = int((year-1900-1)*.25)
-    days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
-    if days < 1.0:
-        year-=1
-        leapyrs = int((year-1900-1)*.25)
-        days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
-    #doy = int(days)
-    return datetime.datetime(year,1,1,0,0,0)+datetime.timedelta(days=days-1)
-
 def jd2gst(JD_UT1,deg=True):
     #Following Vallado pg. 194, gets Greenwich Mean Sideral Time (GMST) in degrees if deg=True or radians otherwise
     #Note that input time is in UT1 NOT UTC. If have UTC and want very accurate theta_gst, need to do UT1 = UTC + Delta_UT1
@@ -570,45 +496,6 @@ def jd2gst(JD_UT1,deg=True):
         theta_GST = theta_GST * pi / 180.
     return theta_GST
 
-
-def groundtrack(year,decimaldoy,a,e,w,Omega,M0,n,timestep=60.,timelen=3*3600.,w_e=7.2921158553e-5):
-    #year and decimaldoy are the UT1 timestamp/epoch for the orbital elements
-    #w_e is earth rotation rate in rad/s
-    #n is mean motion in rad/s
-    #a is semimajor in km
-    #timelen is length of time to propagate orbit for in seconds
-    #timestep is the length of each time step in seconds
-
-    ndeg = n * 180/pi #Convert n to degrees per second
-    nsteps = floor(timelen/timestep)
-    #Compute Julian Date
-    yr,mo,dy,hr,mn,sc = doy2ymdhms(year,decimaldoy)
-    jd = ymdhms2jd(yr,mo,dy,hr,mn,sc)
-
-    #Init output arrays
-
-    lat_arr = zeros(nsteps+1,1)
-    lon_arr = zeros(nsteps+1,1)
-
-    #Set initial values
-    M = M0
-    theta_GST = jd2gst(jd)
-
-    for k in arange(nsteps):
-        E, M_out, tminustp = kepler(ecc,a,M=M)
-        nu_sin,nu_cos,nu_tan = eccentrictotrue(E,ecc,a=a)
-        nu = quadrant_check(nu_sin,nu_cos)
-        #def coe2rv(a,ecc,i,Omega,w,nu,debug=True):
-        R_ECI,V_ECI = coe2rv(a,ecc,i,Omega,w,nu)
-        R_ECEF = eci2ecef(R_ECI)
-        r,lat_arr[k],lon_arr[k] = ecef_cart2spherical(R_ECEF)
-        #Convert Spherical Latitude to Geodetic
-        lat_arr[k] = spherical2geodetic(lat_arr[k],deg=True)
-        #Increment theta_GST and M
-        theta_GST = theta_GST + w_e*timestep
-        M = M+n_deg*timestep
-
-    return lat_arr,lon_arr
 
 def hour_angle_approx(dt,lons):
     """

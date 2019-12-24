@@ -754,7 +754,7 @@ class omni_interval_delay_smooth(object):
             raise RuntimeError('Negative or zero delta-t'
                                 +' (%f minutes) for avg/lag' % (delta_t))
         n_elements = int(np.round(n_mins/delta_t))
-        print('%d minutes convertes to %d elements' % (n_mins,n_elements))
+        #print('%d minutes convertes to %d elements' % (n_mins,n_elements))
         return n_elements
 
     def _delay(self,jd,y,n_mins):
