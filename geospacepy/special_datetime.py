@@ -15,9 +15,9 @@ log = logging.getLogger('dmsp.'+__name__)
 
 #Custom Libraries
 import sys
-from geospacepy import lmk_utils #my toolbox of convenience functions
+#from geospacepy import lmk_utils #my toolbox of convenience functions
 
-#J2000 Epoch (remember that J2000 is defined as starting at NOON on 1-1-2000 not 0 UT)
+#J2000 Epoch (remember that J2000 is defined as starting at NOON on 1-1-2000 not midnight)
 dt_j2000 = datetime.datetime(2000,1,1,12,0,0)
 
 def vectorized_datetime2(conversion_func):
@@ -92,7 +92,7 @@ def vectorized_datetime2(conversion_func):
                 arg_is_indexable.append(True)
 
         #Finally do the conversion
-        converted_times = np.empty((converted_shape))
+        converted_times = np.empty(converted_shape)
         for i_t in range(len(dts)):
             print(dts)
             conversion_args = [dts[i_t]]
@@ -142,7 +142,7 @@ def vectorized_2datetime(conversion_func):
                 t = numerical_times[0]
                 tlen = len(numerical_times)
             except:
-                raise ValueError(('Time input {}'.format(datetimes)
+                raise ValueError(('Time input {}'.format(numerical_times)
                                   +' is not indexable or does not'
                                   +' have a length. Try an array or list.'))
             #Assume things will work out and plan to return a flat array
@@ -216,8 +216,8 @@ def vectorized_2datetime(conversion_func):
     return vectorized_conversion_func
 
 def datetime2jd(dt):
-    """UT Datetime to Julian Date
-    Algorithm 14 in Vallado, pp. 189.
+    """Converts between Python datetime and Julian Date
+    (days since 12:00 PM on January 1, 4713 B.C.)
     Implementation is valid from 1900-2199
     """
     if dt.year < 1900:
@@ -233,11 +233,13 @@ def datetime2jd(dt):
 datetimearr2jd = vectorized_datetime2(datetime2jd)
 
 def jd2datetime(jd):
-    """Takes julian date and returns datetime.datetime
-    Algorithm 22, pp. 208
+    """Converts between Julian Date (days since 12:00 PM on January 1, 4713 B.C.)
+    and Python datetime.
     Implementation is valid for 1900-2199
     """
     T1900 = (jd-2415019.5)/365.25
+    if T1900<0:
+        raise ValueError('Cannot convert Julian dates before 12:00 Jan 1 1900')
     year = 1900+np.floor(T1900)
     leapyrs = np.floor((year-1900-1)*.25)
     days = (jd-2415019.5)-((year-1900)*(365.0) + leapyrs)
@@ -262,6 +264,8 @@ def datetime2doy(dt):
     """Python datetime to day of year"""
     return dt.timetuple().tm_yday + dt.hour/24. + dt.minute/24./60. + dt.second/86400. + dt.microsecond/86400./1e6
 
+datetimearr2doy = vectorized_datetime2(datetime2doy)
+
 def doy2datetime(doy,year):
     """Day of year to python datetime (full precision)"""
     return datetime.datetime(int(year),1,1,0,0,0)+datetime.timedelta(days=doy-1.) #Returns floating point day of year
@@ -272,9 +276,13 @@ def datetime2datenum(dt):
     """Python datetime to matlab epoch (datenum)"""
     return dt.toordinal() + 366. + dt.hour/24. + dt.minute/24./60. + dt.second/86400. + dt.microsecond/86400./1e6
 
+datetimearr2datenum = vectorized_datetime2(datetime2datenum)
+
 def datenum2datetime(mlep):
     """Matlab epoch (datenum) to python datetime"""
-    return datetime.datetime.fromordinal(np.floor(mlep)) + datetime.timedelta(days=mlep%1) - datetime.timedelta(days = 366)
+    return datetime.datetime.fromordinal(int(np.floor(mlep))) + datetime.timedelta(days=np.mod(mlep,1)) - datetime.timedelta(days = 366)
+
+datenumarr2datetime = vectorized_2datetime(datenum2datetime)
 
 def datetime2sod(dt):
     """Python datetime to second of day (microsecond precision)"""

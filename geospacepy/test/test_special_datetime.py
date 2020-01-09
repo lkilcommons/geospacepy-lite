@@ -21,6 +21,11 @@ vallado_3_10_sod = 48165.98
 vallado_3_12_dt = datetime.datetime(2001,3,18,12,14,0)
 vallado_3_12_year = 2001
 vallado_3_12_doy = 77.5097222
+#Test output of matlab 'datevec' to matlab 'datenum'
+# dn = datenum(1995,6,8,20,18,3.7037); fprintf('%10.15f\n',dn);
+# 728818.845876200241037
+matlab_dt = datetime.datetime(1995,6,8,20,18,3,703700)
+matlab_datenum = 728818.845876200241037
 
 def ex_as_arr(example,shape):
     """Make arrays of an example input and output for one of the
@@ -29,7 +34,7 @@ def ex_as_arr(example,shape):
     if shape is None:
         return example
     elif isinstance(shape,int):
-        return [example] * shape
+        return [example for i in range(shape)]
     elif isinstance(shape,tuple):
         array_type = 'object' if isinstance(example,datetime.datetime) else float
         example_arr = np.full(shape,example,dtype=array_type)
@@ -129,5 +134,21 @@ def test_day_of_year_to_datetime():
     delta_t = (dt-expected_dt).total_seconds()
     #This is accurate to about 9 miliseconds, not sure if this
     #is the tabulated values fault or what
-    assert abs(delta_t) < 1e-2
+    assert abs(delta_t) < .01
 
+def test_datenum_to_datetime():
+    dn = matlab_datenum
+    expected_dt = matlab_dt
+    dt = special_datetime.datenum2datetime(dn)
+    delta_t = (dt-expected_dt).total_seconds()
+    #Accurate to within 2 microseconds
+    #(likely b/c more than microsecond precision in tabulated datenum)
+    assert abs(delta_t) < .000002
+
+def test_datetime_to_datenum():
+    dt = matlab_dt
+    expected_dn = matlab_datenum
+    dn = special_datetime.datetime2datenum(dt)
+    delta_t = (dn-expected_dn)/86400. #days to seconds
+    #Accurate to a microsecond
+    assert abs(delta_t) < .000001
