@@ -94,7 +94,6 @@ def vectorized_datetime2(conversion_func):
         #Finally do the conversion
         converted_times = np.empty(converted_shape)
         for i_t in range(len(dts)):
-            print(dts)
             conversion_args = [dts[i_t]]
             for arg,indexable in zip(cleaned_args,arg_is_indexable):
                 if indexable:
@@ -288,9 +287,13 @@ def datetime2sod(dt):
     """Python datetime to second of day (microsecond precision)"""
     return (dt-datetime.datetime.combine(dt.date(),datetime.time(0))).total_seconds()
 
+datetimearr2sod = vectorized_datetime2(datetime2sod) #Not checked
+
 def sod2datetime(sod,year,month,day):
     """Second of day to datetime"""
     return datetime.datetime(year,month,day)+datetime.timedelta(seconds=sod)
+
+sodarr2datetime = vectorized_2datetime(sod2datetime)
 
 def datetime2soy(dt):
     """Datetime to second of year"""

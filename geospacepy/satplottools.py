@@ -1590,10 +1590,10 @@ def rolling_window(a, window):
 
 def moving_average(x,window_size):
     """Creates a weighted average smoothed version of x using the weights in window"""
-    return np.nanmean(rolling_window(np.concatenate((x[:window_size/2],x,x[-window_size/2+1:])),window_size),-1)
+    return np.nanmean(rolling_window(np.concatenate((x[:window_size//2],x,x[-window_size//2+1:])),window_size),-1)
 
 def moving_median(x,window_size):
     """Creates a weighted average smoothed version of x using the weights in window"""
-    return np.nanmedian(rolling_window(np.concatenate((x[:window_size/2],x,x[-window_size/2+1:])),window_size),-1)
+    return np.nanmedian(rolling_window(np.concatenate((x[:window_size//2],x,x[-window_size//2+1:])),window_size),-1)
 
 
