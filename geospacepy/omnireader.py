@@ -353,7 +353,7 @@ class juliandate(omni_derived_var):
 
     def __call__(self):
         if self.varvals is None:
-            self.varvals = special_datetime.datetimearr2jd(oi['Epoch']).flatten()
+            self.varvals = special_datetime.datetimearr2jd(self.oi['Epoch']).flatten()
         return self.varvals
 
 class borovsky(omni_derived_var):
