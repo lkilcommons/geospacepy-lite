@@ -19,6 +19,12 @@ Algorithms implemented in Geospacepy-lite come from many sources, and I attempt 
 
 Vallado, D. A., & McClain, W. D. (2007). Fundamentals of Astrodynamics and Applications (3rd edition). Hawthorne, Calif.: Microcosm Press/Springer.
 
+Several conventions are used throughout geospacepy. These conventions are enforced in preference to adding, for instance, adding additional optional arguments.
+
+    - Angles are assumed radians *except* latitudes (assumed degrees) and longitudes (assumed degrees or hours)
+    - Longitudes are assumed to follow ISO 6709 (negative is west) convention
+    - Times are assumed to be approximate Universal Time (*leap seconds NOT handled*)
+    - Constants are specified in SI units (meters for lengths, kilograms for mass)
 
 .. toctree::
    :maxdepth: 2

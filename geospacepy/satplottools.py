@@ -16,6 +16,10 @@ import matplotlib
 from matplotlib.colors import Normalize, LogNorm
 from scipy import interpolate
 from scipy import ndimage
+from geospacepy.spherical_geometry import (angle_difference,
+                                            angle_midpoint,
+                                            great_circle_distance)
+
 log = logging.getLogger('dmsp.satplottools')
 log.setLevel(logging.DEBUG)
 
@@ -1254,33 +1258,6 @@ def vector_component_plot(ax_e,ax_n,data,satname='dmsp',color='blue',latlim=-50.
             ax_n.text(X[d],Y[d],t.strftime('%X'),color=color,va='top',ha=timejustify,fontsize=fontsize,alpha=.75)
     return ax_e,ax_n
 
-def greatCircleDist(location1,location2,lonorlt='lt'):
-    #Returns n angular distances in radians between n-by-2 numpy arrays
-    #location1, location2 (calculated row-wise so diff between
-    #location1[0,] and location2[0,]
-    #assuming that these arrays have the columns lat[deg],localtime[hours]
-    #and that they are points on a sphere of constant radius
-    #(the points are at the same altitude)
-    azi2rad = pi/12. if lonorlt=='lt' else pi/180
-    wrappt = 24. if lonorlt=='lt' else 360.
-    #Bounds check
-    over = location1[:,1] > wrappt
-    under = location1[:,1] < 0.
-    location1[over,1]=location1[over,1]-wrappt
-    location1[under,1]=location1[under,1]+wrappt
-
-    if location1.ndim == 1 or location2.ndim == 1:
-        dphi = abs(location2[1]-location1[1])*azi2rad
-        a = (90-location1[0])/360*2*pi #get the colatitude in radians
-        b = (90-location2[0])/360*2*pi
-        C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
-    else:
-        dphi = abs(location2[:,1]-location1[:,1])*azi2rad
-        a = (90-location1[:,0])/360*2*pi #get the colatitude in radians
-        b = (90-location2[:,0])/360*2*pi
-        C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
-    return arccos(cos(a)*cos(b)+sin(a)*sin(b)*cos(C))
-
 def circularOrbit(ut,ut1,lat1,azi1,ut2,lat2,azi2,lonorlt='lt'):
     """
     Find latitude and longitude at time ut of
@@ -1340,54 +1317,6 @@ def circularOrbit(ut,ut1,lat1,azi1,ut2,lat2,azi2,lonorlt='lt'):
     #print('ut {} f {} lat {} lt {} lon {} '.format(ut,f,lat_f,azi_f,lon_f))
 
     return lat_f,azi_f
-
-def greatCircleMidpoint(location1,location2,angDist='compute',lonorlt='lt'):
-    #Finds the midpoint lat and lt or lon between two locations along a great circle arc
-    #Can pass angDist as an array to speed up process if already computed,
-    #otherwise computes as needed using above function
-    azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180
-    wrappt = 24. if lonorlt=='lt' else 360.
-    #Bounds check
-    over = location1[:,1] > wrappt
-    under = location1[:,1] < 0.
-    location1[over,1]=location1[over,1]-wrappt
-    location1[under,1]=location1[under,1]+wrappt
-
-    if location1.ndim == 1 or location2.ndim == 1:
-        a = (90-location1[0])*azi2rad
-        b = (90-location2[0])*azi2rad
-        if angDist is 'compute':
-            c = greatCircleDist(location1,location2,lonorlt=lonorlt)
-        else:
-            c = angDist
-        C = (location2[1]-location1[1])/24*2*np.pi
-        azi1 = location1[1]
-    else:
-        a = (90-location1[:,0])*azi2rad
-        b = (90-location2[:,0])*azi2rad
-        if angDist is 'compute':
-            c = greatCircleDist(location1,location2,lonorlt=lonorlt)
-        else:
-            c = angDist
-        C = (location2[:,1]-location1[:,1])/24*2*np.pi
-        azi1 = location1[:,1]
-
-    #original: g = arccos((cos(b)-cos(c)*cos(a)*sin(c/2))*sin(c/2)/sin(c)+cos(a)*cos(c/2))
-    cos_g = cos(a)*cos(c/2)+((cos(b)-cos(a)*cos(c))/sin(c))*sin(c/2)
-    g = arccos(cos_g)
-    sin_I = (sin(c/2)*sin(b)*sin(C)/(sin(c)*sin(g)))
-    I = arcsin(sin_I)
-    lat_mid = 90-g/(2*pi)*360
-    azi_mid = azi1+I/(2*pi)*24
-    #lt_mid[lt_mid>=24] = lt_mid[lt_mid>=24]-24
-        #print "(%.2f-%.2f:%.2f,%.2f-%.2f:%.2f,g=%.2f,I=%.2f)" % (location1[0],location2[0],lat_mid,location1[1],location2[1],lt_mid,g/(2*pi)*360,I/(2*pi)*24)
-    return lat_mid, azi_mid
-
-def azi_difference(azi1,azi2, lonorlt='lt'):
-    """Difference between two longitudes or local times (azi2-azi1), taking into account
-        wrapping"""
-    azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180.
-    return np.arctan2(np.sin(azi2*azi2rad-azi1*azi2rad), np.cos(azi2*azi2rad-azi1*azi2rad))/azi2rad
 
 def cubic_bez_arc(lat,azi1,azi2,lonorlt='lt'):
     """Returns the control point locations for a cubic bezier curve approximation of the arc between
@@ -1489,19 +1418,6 @@ def polarbinplot(ax,bin_edges,bin_values,hemisphere='N',lonorlt='lt',**kwargs):
     ax.add_collection(mappable)
 
     return mappable
-
-def angle_difference(ang1,ang2,degorhour='hour'):
-    """Difference between two angles in degrees or hours (ang2-ang1),
-    taking into account wrapping
-    """
-    ang2rad = np.pi/12. if degorhour=='hour' else np.pi/180.
-    return np.arctan2(np.sin(ang2*ang2rad-ang1*ang2rad), np.cos(ang2*ang2rad-ang1*ang2rad))/ang2rad
-
-def angle_midpoint(ang1,ang2,degorhour='hour'):
-    """
-    Midpoint between two angles in degrees or hours
-    """
-    return ang1 + angle_difference(ang1,ang2,degorhour=degorhour)/2.
 
 def polarbin_vectorplot(ax,bin_edges,bin_values_E,bin_values_N,
                             hemisphere='N',lonorlt='lt',color='black',
