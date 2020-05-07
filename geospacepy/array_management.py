@@ -20,12 +20,12 @@ def is_number_or_len_one_array(number):
             one. False otherwise
     """
     try:
-        l = np.size(number)
-        if l != 1 and isinstance(number,np.ndarray):
+        l = number.size
+        if l != 1:
             return False
         else:
             return True
-    except TypeError:
+    except AttributeError:
         if isinstance(number,int) or isinstance(number,float):
             return True
         else:
@@ -40,22 +40,27 @@ def BroadcastLenOneInputsToMatchArrayInputs(wrapped_func):
     def wrapper(*args,**kwargs):
         args_shapes = []
         unique_shapes = []
-        for arg in enumerate(args):
+        for arg in args:
             if is_number_or_len_one_array(arg):
                 arg_shape = (1,)
             else:
                 arg_shape = arg.shape
+            args_shapes.append(arg_shape)
             if arg_shape not in unique_shapes:
                 unique_shapes.append(arg_shape)
-            args_shapes.append(arg_shape)
 
-        if len(unique_shapes)>1:
+        unique_nonsingle_shapes = [shape for shape in unique_shapes if shape!=(1,)]
+
+        if len(unique_nonsingle_shapes)>1:
             raise ValueError(('Unable to broadcast inputs '
                               +'of shapes {} '.format(args_shapes)
                               +'into a single common shape '
-                              +'wrapped function is {}'.format(self.func)))
-    
-        common_shape = unique_shapes[0]
+                              +'wrapped function is {}'.format(wrapped_func)))
+        if len(unique_nonsingle_shapes)==0:
+            common_shape = (1,)
+        else:
+            common_shape = unique_nonsingle_shapes[0]
+            
         broadcasted_args = []
         for arg,shape in zip(args,args_shapes):
             if shape == common_shape:
