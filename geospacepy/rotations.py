@@ -1,15 +1,32 @@
 import numpy as np
 
-from geospacepy.array_management import is_number_or_len_one_array
+from geospacepy.array_management import (is_number_or_len_one_array,
+                                        CheckInputsAreThreeComponentVectors)
 
 def rotmat(angle,axis):
-    """Return the 3x3 elementary rotation matrix (M),
-    which when pre-multiplied (M*v) by a 3x1 column vector (v)
+    """Return 3x3 elementary rotation matrix (`M`),
+    which when pre-multiplied (`M` * v) by a 3x1 column vector (v)
     returns the new components of v in a coordinate system 
     which has been rotated through an angle (angle) in *radians*
-    about axis (axis), relative to the vector's native coorinate system
-    Note: Positive angles represent rotations according the the right hand rule 
-    (the directions of the fingers if the thumb is the axis)
+    about axis (axis), relative to the vector's native coordinate system
+
+    Parameters
+    ----------
+        angle : float
+            The angle (in radians) to rotate the coordinate axes by
+        axis : int
+            The axis (0,1,2) about which the rotation should be performed
+    
+    Returns
+    -------
+        M : np.ndarray, shape=(3,3)
+            The rotation matrix
+
+    Notes
+    -----
+        Positive angles represent rotations according the the right hand rule 
+        (the directions of the fingers if the thumb is the axis)
+
     """ 
 
     if not is_number_or_len_one_array(angle):
@@ -33,22 +50,38 @@ def rotmat(angle,axis):
                      [   0,  0,  1]])
     return M
 
+@CheckInputsAreThreeComponentVectors('vecs')
 def rot(angles,axis,vecs):
     """Return representation of 3-component vectors vecs in a
     coordinate systems which has been rotated an angle (angle), about
     axis (axis)
+
+    Parameters
+    ----------
+    angles : float or np.ndarray
+        The angle(s) (in radians) which the coordinate system
+        will be rotated by. For single float values, all `vecs` will be
+        rotated by the same angle
+
+    axis : int
+        The axis (0,1,2) about which to rotate the coordinate system
+    
+    vecs : np.ndarray
+        Array of *n* 3-component vectors for which the components in the
+        rotated coordinate frame will be returned (shape=(*n*,3))
+
+    Returns
+    -------
+    
+    rotated_vecs : np.ndarray
+        The components of `vecs` in the rotated frame (shape=(*n*,3))
+
     """
-
-    if vecs.shape[1] != 3:
-        raise ValueError(('Input vecs does have a dimension 1 of size 3'
-                          'for multiple vectors, this function expects'
-                          'a tall form input [n_vecs x 3]'))
-
     n_vecs = vecs.shape[0]
     if is_number_or_len_one_array(angles):
         angles_for_rot = angles*np.ones((n_vecs,))
     elif angles.size == n_vecs:
-        angles_for_rot = angles.reshape((-1,1))
+        angles_for_rot = angles.flatten()
     else:
         raise ValueError('Cannot map {} angle to {} vectors'.format(angles.size,
                                                                     n_vecs))
@@ -62,12 +95,15 @@ def rot(angles,axis,vecs):
     return rotated_vecs
 
 def rot1(angles,vecs):
+    """Shorthand for rotation about axis 0"""
     return rot(angles,0,vecs)
 
 def rot2(angles,vecs):
+    """Shorthand for rotation about axis 1"""
     return rot(angles,1,vecs)
 
 def rot3(angles,vecs):
+    """Shorthand for rotation about axis 2"""
     return rot(angles,2,vecs)
 
 if __name__ == '__main__':

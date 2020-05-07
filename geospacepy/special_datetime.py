@@ -4,7 +4,7 @@
     Also has timestamp matching routine
 """
 import numpy as np
-import pdb, traceback, logging
+import pdb, traceback, logging,textwrap
 from functools import wraps
 import datetime
 import bisect
@@ -20,7 +20,14 @@ import sys
 #J2000 Epoch (remember that J2000 is defined as starting at NOON on 1-1-2000 not midnight)
 dt_j2000 = datetime.datetime(2000,1,1,12,0,0)
 
-def vectorized_datetime2(conversion_func):
+def _update_vectorized_conversion_func_docstring(vectorized_conversion_func):
+    #First line is short description in numpy style docstrings
+    origdoc = vectorized_conversion_func.__doc__
+    short_description = origdoc.splitlines()[0]
+    newdoc = origdoc.replace(short_description,short_description+' (vectorized)')
+    vectorized_conversion_func.__doc__ = newdoc
+    
+def _vectorized_datetime2(conversion_func):
     """Generates a vectorized version of a conversion function which converts
     from datetime to something else"""
     @wraps(conversion_func)
@@ -110,9 +117,11 @@ def vectorized_datetime2(conversion_func):
     vectorized_name = conversion_func.__name__.replace('datetime2','datetimearr2')
     vectorized_conversion_func.__name__ = vectorized_name
 
+    _update_vectorized_conversion_func_docstring(vectorized_conversion_func)
+    
     return vectorized_conversion_func
 
-def vectorized_2datetime(conversion_func):
+def _vectorized_2datetime(conversion_func):
     """Generates a function which converts a time into an
     np array of datetimes. If the inputs are np arrays, the output array
     will mirror the inputs' shape. If inputs aren't arrays, then the output
@@ -212,12 +221,23 @@ def vectorized_2datetime(conversion_func):
 
     vectorized_name = conversion_func.__name__.replace('2datetime','arr2datetime')
     vectorized_conversion_func.__name__ = vectorized_name
+
+    _update_vectorized_conversion_func_docstring(vectorized_conversion_func)
+   
     return vectorized_conversion_func
 
 def datetime2jd(dt):
     """Converts between Python datetime and Julian Date
     (days since 12:00 PM on January 1, 4713 B.C.)
     Implementation is valid from 1900-2199
+
+    Parameters
+    ----------
+    dt : datetime.datetime
+
+    Returns
+    -------
+    jd : float
     """
     if dt.year < 1900:
         raise ValueError('Year must be 4 digit year')
@@ -229,12 +249,21 @@ def datetime2jd(dt):
     jd = t1-t2+t3+t4+t5
     return jd
 
-datetimearr2jd = vectorized_datetime2(datetime2jd)
+datetimearr2jd = _vectorized_datetime2(datetime2jd)
 
 def jd2datetime(jd):
     """Converts between Julian Date (days since 12:00 PM on January 1, 4713 B.C.)
     and Python datetime.
     Implementation is valid for 1900-2199
+
+    Parameters
+    ----------
+    jd : float
+
+    Returns
+    -------
+    dt : datetime.datetime
+
     """
     T1900 = (jd-2415019.5)/365.25
     if T1900<0:
@@ -249,58 +278,155 @@ def jd2datetime(jd):
     #doy = np.floor(days)
     return datetime.datetime(int(year),1,1,0,0,0)+datetime.timedelta(days=(days-1))
 
-jdarr2datetime = vectorized_2datetime(jd2datetime)
+jdarr2datetime = _vectorized_2datetime(jd2datetime)
 
 def datetime2j2000(dt):
-    """Datetime to Julian date relative to j2000 Epoch (Noon on Jan 1, 2000)"""
+    """Datetime to Julian date relative to j2000 Epoch (Noon on Jan 1, 2000)
+    
+    Parameters
+    ----------
+    dt : datetime.datetime
+
+    Returns
+    -------
+    j2000 : float
+    
+    """
     return datetime2jd(dt)-datetime2jd(dt_j2000)
 
 def j20002datetime(j2000):
-    """Julian date relative to j2000 Epoch (Noon on Jan 1, 2000) to datetime"""
+    """Julian date relative to j2000 Epoch (Noon on Jan 1, 2000) to datetime
+    
+    Parameters
+    ----------
+    j2000 : float
+
+    Returns
+    -------
+    dt : datetime.datetime
+    """
     return jd2datetime(j2000 + datetime2jd(dt_j2000))
 
 def datetime2doy(dt):
-    """Python datetime to day of year"""
+    """Python datetime to (decimal) day of year
+    
+    Parameters
+    ----------
+    dt : datetime.datetime
+
+    Returns
+    -------
+    doy : float
+        
+    """
     return dt.timetuple().tm_yday + dt.hour/24. + dt.minute/24./60. + dt.second/86400. + dt.microsecond/86400./1e6
 
-datetimearr2doy = vectorized_datetime2(datetime2doy)
+datetimearr2doy = _vectorized_datetime2(datetime2doy)
 
 def doy2datetime(doy,year):
-    """Day of year to python datetime (full precision)"""
+    """Day of year to python datetime
+    
+    Parameters
+    ----------
+    doy : float
+    year : float or int
+
+    Returns
+    -------
+    dt : datetime.datetime
+    """
     return datetime.datetime(int(year),1,1,0,0,0)+datetime.timedelta(days=doy-1.) #Returns floating point day of year
 
-doyarr2datetime = vectorized_2datetime(doy2datetime)
+doyarr2datetime = _vectorized_2datetime(doy2datetime)
 
 def datetime2datenum(dt):
-    """Python datetime to matlab epoch (datenum)"""
+    """Python datetime to matlab epoch (datenum)
+
+    Parameters
+    ----------
+    dt : datetime.datetime
+
+    Returns
+    -------
+    mlep : float
+    """
     return dt.toordinal() + 366. + dt.hour/24. + dt.minute/24./60. + dt.second/86400. + dt.microsecond/86400./1e6
 
-datetimearr2datenum = vectorized_datetime2(datetime2datenum)
+datetimearr2datenum = _vectorized_datetime2(datetime2datenum)
 
 def datenum2datetime(mlep):
-    """Matlab epoch (datenum) to python datetime"""
+    """Matlab epoch (datenum) to python datetime
+    
+    Parameters
+    ----------
+    mlep : float
+
+    Returns
+    -------
+    dt : datetime.datetime
+    """
     return datetime.datetime.fromordinal(int(np.floor(mlep))) + datetime.timedelta(days=np.mod(mlep,1)) - datetime.timedelta(days = 366)
 
-datenumarr2datetime = vectorized_2datetime(datenum2datetime)
+datenumarr2datetime = _vectorized_2datetime(datenum2datetime)
 
 def datetime2sod(dt):
-    """Python datetime to second of day (microsecond precision)"""
+    """Python datetime to (decimal) second of day
+
+    Parameters
+    ----------
+    dt : datetime.datetime
+
+    Returns
+    -------
+    sod : float
+    """
     return (dt-datetime.datetime.combine(dt.date(),datetime.time(0))).total_seconds()
 
-datetimearr2sod = vectorized_datetime2(datetime2sod) #Not checked
+datetimearr2sod = _vectorized_datetime2(datetime2sod) #Not checked
 
 def sod2datetime(sod,year,month,day):
-    """Second of day to datetime"""
+    """Second of day to datetime
+    
+    Parameters
+    ----------
+    sod : float
+    year : float or int
+    month : float or int
+    day : float or int
+
+    Returns
+    -------
+    sod : float
+    """
     return datetime.datetime(year,month,day)+datetime.timedelta(seconds=sod)
 
-sodarr2datetime = vectorized_2datetime(sod2datetime)
+sodarr2datetime = _vectorized_2datetime(sod2datetime)
 
 def datetime2soy(dt):
-    """Datetime to second of year"""
+    """Datetime to second of year
+    
+    Parameters
+    ----------
+    dt : datetime.datetime
+
+    Returns
+    -------
+    soy : float
+    """
     return (dt-datetime.datetime(dt.year,1,1)).total_seconds()
 
 def soy2datetime(soy,year):
-    """Second of year to datetime"""
+    """Second of year to datetime
+    
+    Parameters
+    ----------
+    soy : float
+    year : float or int
+
+    Returns
+    -------
+    dt : datetime.datetime
+    """
     return datetime.datetime(year,1,1)+datetime.timedelta(seconds=np.floor(soy))
 
 # def datetimearr2jd(datetimearr):
@@ -503,22 +629,28 @@ def soy2datetime(soy,year):
 #     return datetimes
 
 def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplicates=False):
-    """
-    Finds a matching timestamp in primary_dt
+    """Finds a matching timestamp in primary_dt
     within tolerance tol_us (given in microseconds)
-    for every value in dt. Faster implementation than above, but also
-    less clear.
-    Inputs:
-    -------
-        dt - np.array(dtype=object)
-        primary_dt - np.array(dtype=object)
+    for every value in dt.
+    
+    Parameters
+    ----------
 
-    Returns:
-    --------
-        inds - np.ndarray
-        Array of len(dt) of indices into
-        primary_dt or NaN if no match was found
-        for a partiuclar dt value.
+        dt - np.array(dtype=object), size=n
+            The array of timestamps (Python datetime) 
+            for which you want to find matches 
+        
+        primary_dt - np.array(dtype=object), size=m
+            The array of timestamps (Python datetimes) which will be searched
+
+    Returns
+    -------
+    
+        inds - np.ndarray, size=n
+            Array of len(dt) of indices into
+            primary_dt or NaN if no match was found
+            for a partiuclar dt value.
+    
     """
 
     import bisect
@@ -634,8 +766,8 @@ def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplic
 
         except:
             traceback.print_exc()
-            prnp.floor("Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l))
-            prnp.floor("dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l])))
+            print("Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l))
+            print("dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l])))
             pdb.set_trace()
 
     #print "Completed timestamp alignment, %d points remained unmatched out of %d\n" %(unmatched_counter,len(dt))

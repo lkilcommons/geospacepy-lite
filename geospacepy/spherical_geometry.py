@@ -26,13 +26,14 @@ def angle_midpoint(ang1,ang2,degorhour='hour'):
     return ang1 + angle_difference(ang1,ang2,degorhour=degorhour)/2.
 
 def great_circle_distance(location1,location2,lonorlt='lt'):
-    #Returns n angular distances in radians between n-by-2 numpy arrays
-    #location1, location2 (calculated row-wise so diff between
-    #location1[0,] and location2[0,]
-    #assuming that these arrays have the columns lat[deg],localtime[hours]
-    #and that they are points on a sphere of constant radius
-    #(the points are at the same altitude)
-    azi2rad = pi/12. if lonorlt=='lt' else pi/180
+    """Returns n angular distances in radians between n-by-2 numpy arrays
+    location1, location2 (calculated row-wise so diff between
+    location1[0,] and location2[0,]
+    assuming that these arrays have the columns lat[deg],localtime[hours]
+    and that they are points on a sphere of constant radius
+    (the points are at the same altitude)
+    """
+    azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180
     wrappt = 24. if lonorlt=='lt' else 360.
     #Bounds check
     over = location1[:,1] > wrappt
@@ -41,21 +42,23 @@ def great_circle_distance(location1,location2,lonorlt='lt'):
     location1[under,1]=location1[under,1]+wrappt
 
     if location1.ndim == 1 or location2.ndim == 1:
-        dphi = abs(location2[1]-location1[1])*azi2rad
-        a = (90-location1[0])/360*2*pi #get the colatitude in radians
-        b = (90-location2[0])/360*2*pi
+        dphi = np.abs(location2[1]-location1[1])*azi2rad
+        a = (90-location1[0])/360*2*np.pi #get the colatitude in radians
+        b = (90-location2[0])/360*2*np.pi
         C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
     else:
-        dphi = abs(location2[:,1]-location1[:,1])*azi2rad
-        a = (90-location1[:,0])/360*2*pi #get the colatitude in radians
-        b = (90-location2[:,0])/360*2*pi
+        dphi = np.abs(location2[:,1]-location1[:,1])*azi2rad
+        a = (90-location1[:,0])/360*2*np.pi #get the colatitude in radians
+        b = (90-location2[:,0])/360*2*np.pi
         C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
     return np.arccos(np.cos(a)*np.cos(b)+np.sin(a)*np.sin(b)*np.cos(C))
 
 def great_circle_midpoint(location1,location2,angDist='compute',lonorlt='lt'):
-    #Finds the midpoint lat and lt or lon between two locations along a great circle arc
-    #Can pass angDist as an array to speed up process if already computed,
-    #otherwise computes as needed using above function
+    """
+    Finds the midpoint lat and lt or lon between two locations 
+    along a great circle arc. Can pass angDist as an array to speed up process 
+    if already computed, otherwise computes as needed using great_circle_distance
+    """
     azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180
     wrappt = 24. if lonorlt=='lt' else 360.
     #Bounds check
@@ -88,8 +91,8 @@ def great_circle_midpoint(location1,location2,angDist='compute',lonorlt='lt'):
     g = arccos(cos_g)
     sin_I = (sin(c/2)*sin(b)*sin(C)/(sin(c)*sin(g)))
     I = arcsin(sin_I)
-    lat_mid = 90-g/(2*pi)*360
-    azi_mid = azi1+I/(2*pi)*24
+    lat_mid = 90-g/(2*np.pi)*360
+    azi_mid = azi1+I/(2*np.pi)*24
     return lat_mid, azi_mid
 
 def great_circle_rectangle_area(lats_bottom,lats_top,azis_left,azis_right,r,degorhour):

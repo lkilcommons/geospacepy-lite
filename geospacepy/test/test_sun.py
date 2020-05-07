@@ -4,7 +4,7 @@ import numpy as np
 import numpy.testing as nptest
 from geospacepy.special_datetime import jd2datetime,datetime2jd
 from geospacepy.sun import greenwich_mean_siderial_time
-from geospacepy.sun import solar_position_almanac,solar_position_russell
+from geospacepy.sun import solar_position_almanac,_solar_position_russell
 
 #Vallado, pp 194, example of calculating Greenwich Mean
 #Siderial Time
@@ -124,7 +124,7 @@ def test_russell_solar_position_within_6_thousandths_of_a_degree(alman_dict):
     
     example_outs = _almanac_expected(alman_dict)
     dt,jd,expected_ra_rad,expected_dec_rad = example_outs
-    gmst_rad,dec_rad,ra_rad = solar_position_russell(dt)
+    gmst_rad,dec_rad,ra_rad = _solar_position_russell(dt)
     
     _print_result('Russell',dt,'Right Ascencion',ra_rad,expected_ra_rad)
     _print_result('Russell',dt,'Declination',dec_rad,expected_dec_rad)

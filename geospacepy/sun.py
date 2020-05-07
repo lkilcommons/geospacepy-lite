@@ -1,6 +1,7 @@
 import numpy as np
 import datetime
 from geospacepy.special_datetime import datetime2jd,dt_j2000
+from geospacepy.array_management import BroadcastLenOneInputsToMatchArrayInputs
 
 def solar_position_almanac(jds):
     """
@@ -15,22 +16,22 @@ def solar_position_almanac(jds):
     The Almanac describes this formula as yeilding a precision
     better than 1' (1/60 degrees) for the years 1950 to 2050
 
-    PARAMETERS
+    Parameters
     ----------
 
-        jds - np.ndarray or float
-            Julian dates for which to calculate solar positions
+    jds : np.ndarray or float
+        Julian dates for which to calculate solar positions
 
-    RETURNS
+    Returns
     -------
 
-        alpha - np.ndarray or float (matches input)
-            Solar apparent right ascension (angle in equatorial
-            plane measured clockwise from the vernal equinox direction),
-            in radians
+    alpha : np.ndarray or float (matches input)
+        Solar apparent right ascension (angle in equatorial
+        plane measured clockwise from the vernal equinox direction),
+        in radians
 
-        delta - np.ndarray or float (matches input)
-            Solar declination (equiv. to subsolar latitude), in radians
+    delta : np.ndarray or float (matches input)
+        Solar declination (equiv. to subsolar latitude), in radians
 
     """
 
@@ -73,8 +74,14 @@ def solar_position_almanac(jds):
     delta_r = np.radians(delta)
     return alpha_r,delta_r
 
-def solar_position_russell(dt):
-    """
+def _solar_position_russell(dt):
+    """This function is DEPRECATED use solar_position_almanac instead.
+    There is reliable documentation for the solar_position_almanac
+    algorithm, whereas the Russell algorithm only references
+    'private communication'
+    
+    The following is the fortran code from which this code was translated:
+
     From C.T. Russell, (1971) "Geophysical Coordinate Transformations",
     Cosmic. Electrodyn. 2, 184-196
     ...
@@ -145,30 +152,31 @@ def greenwich_mean_siderial_time(jds):
     between the vernal equinox direction and the prime meridian (the 
     line of longitude through Greenwich, England).
     
-    PARAMETERS
+    Parameters
     ----------
 
-        jds - float or np.ndarray
-            The julian date(s) of the times for which the GMST should
-            be calculated
+    jds : float or np.ndarray
+        The julian date(s) of the times for which the GMST should
+        be calculated
 
-    RETURNS
+    Returns
     -------
 
-        theta_GST - float or np.ndarray
-            The Greenwich Mean Siderial Time in radians
+    theta_GST : float or np.ndarray
+        The Greenwich Mean Siderial Time in radians
 
-    .. note::
+    Notes
+    -----
 
-        Because this calculation depends on the actual exact number of earth
-        rotations since the J2000 epoch, the time (julian date) strictly speaking
-        should be in the UT1 system (the time system determined from observations
-        of distant stars), because this system takes into account the small changes
-        in earth's rotation speed.
-        
-        Generally though, UTC is available instead of UT1. UTC is determined
-        from atomic clocks, and is kept within +- 1 second of UT1 
-        by the periodic insertion of leap seconds.
+    Because this calculation depends on the actual exact number of earth
+    rotations since the J2000 epoch, the time (julian date) strictly speaking
+    should be in the UT1 system (the time system determined from observations
+    of distant stars), because this system takes into account the small changes
+    in earth's rotation speed.
+    
+    Generally though, UTC is available instead of UT1. UTC is determined
+    from atomic clocks, and is kept within +- 1 second of UT1 
+    by the periodic insertion of leap seconds.
     
     """
     jd_j2000 = datetime2jd(dt_j2000)
@@ -192,46 +200,121 @@ def greenwich_mean_siderial_time(jds):
     # Ensure in 0 to 360.
     theta_GST = np.mod(theta_GST,360.)
 
+    # Radians
     theta_GST = theta_GST * np.pi / 180.
     return theta_GST
 
-def solar_zenith_angle(dt,lats,lons):
+@BroadcastLenOneInputsToMatchArrayInputs
+def local_hour_angle(jds,glons):
     """
-    Finds solar zenith angle using Russell solar position
+    Finds local hour angle in radians. The sign convention is that of astronomy 
+    (positive to the west, meaning angle increases opposite the 
+    rotation direction of earth).
+
+    Under this sign convention the hour angle (in units of hours) is the
+    time it will be before for the sun is directly overhead at the specified
+    location and time.
+
+    Parameters
+    ----------
+
+    jds : np.ndarray or float
+        Time (as julian date)
+
+    glons : np.ndarray or float
+        Geographic longitude
+
+    Returns
+    -------
+
+    lhas : np.ndarray or float
+        Local hour angles for locations at specified times
+    
+    .. note::
+
+        See also Vallado Figure 3-9 (pp.157)
+
+    """
+    sra,dec = solar_position_approx(jds)
+    gmst = greenwich_mean_siderial_time(jds) 
+    
+    #Greenwich Mean Sideral Time, Right Ascension, and longitude are
+    #all measured with positive angles counterclockwise about the north pole
+    #(with the earth's rotation direction).
+    
+    #But the hour angle is defined as positive opposite the earth's rotation
+    phi = np.radians(glons)
+    lhas = (gmst+phi) - sra
+    return lhas
+
+@BroadcastLenOneInputsToMatchArrayInputs
+def local_mean_solar_time(jds,glons):
+    """
+    Find the local solar time (using the mean equinox)
+
+    Parameters
+    ----------
+
+    jds : np.ndarray or float
+        Time (as julian date)
+
+    glons : np.ndarray or float
+        Geographic longitude
+
+    Returns
+    -------
+
+    lmsts : np.ndarray or float
+            Local mean solar time at locations at specified times
+
+    Notes
+    -----
+
+    As an angle, the solar local time increases in the same direction
+    as the ISO 6709 longitude convention (eastward positive).
+
+    The differences between hour angle and local time is that hour angle
+    is:
+    1.) Measured with positive in the westward direction
+    2.) Zero when the sun is directly overhead (instead of 12 for solar time)
+
+    See also Vallado pp. 184
+
+    """
+    lhas = local_hour_angle(jds,glons)
+    lhas *= -1. #Convert to positive in the eastward direction
+    lmsts = lhas + np.pi #Equiv to + 12 in hours units
+    return lmsts
+
+@BroadcastLenOneInputsToMatchArrayInputs
+def solar_zenith_angle(jds,glats,glons):
+    """
+    Finds solar zenith angle using Astronomical Almanac low-accuracy
+    solar position.
+
+    Parameters
+    ----------
+
+    jds : np.ndarray or float
+        Time (as julian date)
+
+    glats : np.ndarray or float
+        Geographic (geocentric-spherical) latitude of the location
+
+    glons : np.ndarray or float
+        Geographic longitude of the location
+
+    Returns
+    -------
+
+    szas : np.ndarray or float
+        Solar Zenith angles for the time/location combinations
+        specified (radians)
+
     """
     lam = np.radians(lats)
     phi = np.radians(lons)
-    gst,sdec,sra = solar_position_approx(dt)
-    #Calculate hour angle
-    sha = sra - (gst+phi)
+    
     cossza = np.sin(lam)*np.sin(sdec) + np.cos(lam)*np.cos(sdec)*np.cos(sha)
-    return np.arccos(cossza)
-
-def hour_angle_approx(dt,lons):
-    """
-    Returns hour angle in degrees
-    """
-    lons[lons<0.] = lons[lons<0.]+360.
-    gamma = 2 * pi / 365 * (dt.timetuple().tm_yday - 1 + float(dt.hour - 12) / 24)
-    eqtime = 229.18 * (0.000075 + 0.001868 * cos(gamma) - 0.032077 * sin(gamma) \
-                - 0.014615 * cos(2 * gamma) - 0.040849 * sin(2 * gamma))
-    decl = 0.006918 - 0.399912 * cos(gamma) + 0.070257 * sin(gamma) \
-            - 0.006758 * cos(2 * gamma) + 0.000907 * sin(2 * gamma) \
-            - 0.002697 * cos(3 * gamma) + 0.00148 * sin(3 * gamma)
-    time_offset = eqtime + 4 * lons
-    tst = dt.hour * 60 + dt.minute + dt.second / 60 + time_offset
-    ha = tst / 4 - 180.
-    return ha
-
-def lon2lt(dt,lons):
-    """
-    Converts an array of longitudes into solar local times
-    """
-    phi = np.radians(lons)
-    #Returns in radians
-    gst,sdec,sra = solar_position_approx(dt)
-    #Calculate hour angle
-    sha = sra - (gst+phi)
-    #Convert to hours
-    lts = sha*12./np.pi+12.
-    return lts
+    szas = np.arccos(cossza)
+    return szas

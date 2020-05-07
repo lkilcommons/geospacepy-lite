@@ -11,7 +11,7 @@ created for analyzing in-situ sensed electrodynamics and particle precipitation 
 
 .. note::
 	
-	Where multiple versions of an algorithm exist, this code generally implements the most approximate simple-minded version. It's a place to start and get an approximate solution to a particular problem.
+	Where multiple versions of an algorithm exist, this code generally implements the most approximate simple-minded version.
 
 The dependacies of the package are limited as much as possible to the core scientific python packages like the standard library, numpy, and matplotlib.
 
@@ -21,16 +21,30 @@ Vallado, D. A., & McClain, W. D. (2007). Fundamentals of Astrodynamics and Appli
 
 Several conventions are used throughout geospacepy. These conventions are enforced in preference to adding, for instance, adding additional optional arguments.
 
-    - Angles are assumed radians *except* latitudes (assumed degrees) and longitudes (assumed degrees or hours)
-    - Longitudes are assumed to follow ISO 6709 (negative is west) convention
-    - Times are assumed to be approximate Universal Time (*leap seconds NOT handled*)
-    - Constants are specified in SI units (meters for lengths, kilograms for mass)
+- Angles are assumed radians *except*:
+
+  * Latitudes (assumed degrees)
+  * Longitudes (assumed degrees)
+  * Localtimes (when used as azimuth, i.e. replacing Longitude)(assumed hours)
+
+- Sign/Nomenclature conventions reflect ISO standards (when possible):
+
+  * Longitudes are assumed to follow ISO 6709 (negative is west) convention
+
+- Times are assumed to be approximate Universal Time (*leap seconds NOT handled*)
+- Constants are specified in SI units (meters for lengths, kilograms for mass)
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
    special_datetime
+   sun
+   rotations
+   terrestrial_spherical
+   spherical_geometry
+
+
 
 
 
