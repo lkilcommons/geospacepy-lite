@@ -37,7 +37,7 @@ def BroadcastLenOneInputsToMatchArrayInputs(wrapped_func):
     which matches the size of the other inputs before passing
     the inputs to the wrapped function"""
     @functools.wraps(wrapped_func)
-    def wrapper(self,*args,**kwargs):
+    def wrapper(*args,**kwargs):
         args_shapes = []
         unique_shapes = []
         for arg in enumerate(args):
@@ -63,7 +63,7 @@ def BroadcastLenOneInputsToMatchArrayInputs(wrapped_func):
             else:
                 broadcasted_args.append(np.ones(common_shape)*arg)
         
-        return self.func(*broadcasted_args,**kwargs)
+        return wrapped_func(*broadcasted_args,**kwargs)
     return wrapper
 
 def _check_follows_3_component_vector_convention(inpt):
