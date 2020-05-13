@@ -14,18 +14,6 @@ Geospacepy is MIT open source licensed software. The usual legal no-warranties, 
 
 Geospacepy was developed using Python 2.7, Python 3 support was added programmatically using 2to3 script. I haven't tested extensively using Python 3. Unit tests pass but test coverage is pretty spotty still.
 
-### OMNIREADER ###
-
-I envision that the most useful part of this library to others will be the omnireader.py code. It provides an functionality for on-demand downloading and reading of solar wind data from [NASA OmniWeb](http://omniweb.gsfc.nasa.gov/).
-
-If you need fast OMNI data reading I recommend installing:
-
-1. [The NASA CDF Library](http://cdf.gsfc.nasa.gov/)
-
-2. [Spacepy](https://pypi.python.org/pypi/SpacePy), for it's pyCDF python interface to the NASA CDF Library
-
-If geospacepy-lite does not detect SpacePy on your computer, it will use the NASA OMNIWeb ASCII text files.
-
 ### SPECIALDATETIME ###
 
 This is a very basic set of utilities for handling numpy arrays of Python datetimes, and converting from and to other time formats, such as MATLAB datenumber, day-of-year, and Julian date. There are other tools which do this, but specialdatetime.py has the advantage of being very lightweight.
