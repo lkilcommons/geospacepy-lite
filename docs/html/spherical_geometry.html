@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>spherical_geometry &#8212; geospacepy-lite 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="terrestrial_spherical" href="terrestrial_spherical.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="terrestrial_spherical.html" title="terrestrial_spherical"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="spherical-geometry">
+<h1>spherical_geometry<a class="headerlink" href="#spherical-geometry" title="Permalink to this headline">¶</a></h1>
+<p>This module implements various algorithms from spherical geometry which
+are useful in geospace or spacecraft data analysis.</p>
+<p>For example, one algorithm implemented here can be used to integrate
+values sampled on a regular latitude/longitude grid at a single altitude,
+which is a common format of geospace model output.</p>
+<div class="section" id="module-geospacepy.spherical_geometry">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-geospacepy.spherical_geometry" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="geospacepy.spherical_geometry.angle_difference">
+<code class="sig-prename descclassname">geospacepy.spherical_geometry.</code><code class="sig-name descname">angle_difference</code><span class="sig-paren">(</span><em class="sig-param">ang1</em>, <em class="sig-param">ang2</em>, <em class="sig-param">degorhour='hour'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/spherical_geometry.html#angle_difference"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.spherical_geometry.angle_difference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Difference between two angles in degrees or hours (ang2-ang1),
+taking into account wrapping</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.spherical_geometry.angle_midpoint">
+<code class="sig-prename descclassname">geospacepy.spherical_geometry.</code><code class="sig-name descname">angle_midpoint</code><span class="sig-paren">(</span><em class="sig-param">ang1</em>, <em class="sig-param">ang2</em>, <em class="sig-param">degorhour='hour'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/spherical_geometry.html#angle_midpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.spherical_geometry.angle_midpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Midpoint between two angles in degrees or hours</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.spherical_geometry.great_circle_distance">
+<code class="sig-prename descclassname">geospacepy.spherical_geometry.</code><code class="sig-name descname">great_circle_distance</code><span class="sig-paren">(</span><em class="sig-param">location1</em>, <em class="sig-param">location2</em>, <em class="sig-param">lonorlt='lt'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/spherical_geometry.html#great_circle_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.spherical_geometry.great_circle_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns n angular distances in radians between n-by-2 numpy arrays
+location1, location2 (calculated row-wise so diff between
+location1[0,] and location2[0,]
+assuming that these arrays have the columns lat[deg],localtime[hours]
+and that they are points on a sphere of constant radius
+(the points are at the same altitude)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.spherical_geometry.great_circle_midpoint">
+<code class="sig-prename descclassname">geospacepy.spherical_geometry.</code><code class="sig-name descname">great_circle_midpoint</code><span class="sig-paren">(</span><em class="sig-param">location1</em>, <em class="sig-param">location2</em>, <em class="sig-param">angDist='compute'</em>, <em class="sig-param">lonorlt='lt'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/spherical_geometry.html#great_circle_midpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.spherical_geometry.great_circle_midpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the midpoint lat and lt or lon between two locations
+along a great circle arc. Can pass angDist as an array to speed up process
+if already computed, otherwise computes as needed using great_circle_distance</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.spherical_geometry.great_circle_rectangle_area">
+<code class="sig-prename descclassname">geospacepy.spherical_geometry.</code><code class="sig-name descname">great_circle_rectangle_area</code><span class="sig-paren">(</span><em class="sig-param">lats_bottom</em>, <em class="sig-param">lats_top</em>, <em class="sig-param">azis_left</em>, <em class="sig-param">azis_right</em>, <em class="sig-param">r</em>, <em class="sig-param">degorhour</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/spherical_geometry.html#great_circle_rectangle_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.spherical_geometry.great_circle_rectangle_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the surface area of any number of ‘great-circle rectangles’
+(spherical quadrilaterals, whose 4 sides are all great circle arcs)
+on the surface of a sphere of radius r.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>- float</strong><strong> or </strong><strong>np.ndarray</strong> (<em>r</em>) – Latitude(s) specifying the bottom arc
+of the great-circle rectangle(s)</p></li>
+<li><p><strong>- float</strong><strong> or </strong><strong>np.ndarray</strong> – Latitude(s) specifying the top arc
+of the great-circle rectangle(s)</p></li>
+<li><p><strong>- float</strong><strong> or </strong><strong>np.ndarray</strong> – Azimuth/Longitude(s) specifying the left side arc
+of the great-circle rectangle(s)</p></li>
+<li><p><strong>- float</strong><strong> or </strong><strong>np.ndarray</strong> – Azimuth/Longitude(s) specifying the right side arc
+of the great-circle rectangle(s)</p></li>
+<li><p><strong>- float</strong><strong> or </strong><strong>np.ndarray</strong> – Radius of the sphere on which to calculate the area</p></li>
+<li><p><strong>- str</strong> (<em>degorhour</em>) – Units of the azimuth/longitude (‘deg’ for degrees,
+‘hour’ for hours)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Surface areas of the great circle rectangles</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>areas - float or np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.spherical_geometry.grid_surface_integral">
+<code class="sig-prename descclassname">geospacepy.spherical_geometry.</code><code class="sig-name descname">grid_surface_integral</code><span class="sig-paren">(</span><em class="sig-param">grid_lats</em>, <em class="sig-param">grid_azis</em>, <em class="sig-param">grid_values</em>, <em class="sig-param">sphere_radius</em>, <em class="sig-param">degorhour</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/spherical_geometry.html#grid_surface_integral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.spherical_geometry.grid_surface_integral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the approximate surface integral of a field of values
+specified on a grid of m latitudes and n longitudes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>- np.ndarray</strong><strong>, </strong><strong>shape=</strong><strong>(</strong><strong>m</strong><strong>,</strong><strong>n</strong><strong>)</strong> (<em>grid_values</em>) – The latitude values of the grid points. Latitudes must
+change along dimension 0, and stay constant along dimension 1</p></li>
+<li><p><strong>- np.ndarray</strong><strong>, </strong><strong>shape=</strong><strong>(</strong><strong>m</strong><strong>,</strong><strong>n</strong><strong>)</strong> – The azimuth/longitude values of the grid points. Longitudes must
+change along dimension 1, and stay constant along dimension 0</p></li>
+<li><p><strong>- np.ndarray</strong><strong>, </strong><strong>shape=</strong><strong>(</strong><strong>m</strong><strong>,</strong><strong>n</strong><strong>)</strong> – The values of the field be integrated at the grid points</p></li>
+<li><p><strong>- float</strong> (<em>sphere_radius</em>) – The radius of the sphere on which the surface integral will
+be computed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The result of the surface integral,
+units: units of grid_values * units of sphere_radius ** 2</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>integrated_values - float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">spherical_geometry</a><ul>
+<li><a class="reference internal" href="#module-geospacepy.spherical_geometry">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="terrestrial_spherical.html"
+                        title="previous chapter">terrestrial_spherical</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/spherical_geometry.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="terrestrial_spherical.html" title="terrestrial_spherical"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Liam Kilcommons.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

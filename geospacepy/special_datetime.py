@@ -1,8 +1,5 @@
-"""
-    special_datetime.py
-    A library of miscellaneous useful vectorized datetime conversion functions.
-    Also has timestamp matching routine
-"""
+# (C) 2020 University of Colorado AES-CCAR-SEDA (Space Environment Data Analysis) Group
+# Written by Liam M. Kilcommons
 import numpy as np
 import pdb, traceback, logging,textwrap
 from functools import wraps

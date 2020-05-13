@@ -11,15 +11,14 @@ from setuptools import setup, Extension
 from setuptools.command import install as _install
 
 setup(name='geospacepy',
-      version = "0.1.0",
+      version = "0.2.0",
       description = "A collection of standalone modules for geospace data analysis",
       author = "Liam Kilcommons",
       author_email = 'liam.kilcommons@colorado.edu',
       url = "https://github.com/lkilcommons/geospacepy-lite",
       download_url = "https://github.com/lkilcommons/geospacepy-lite",
-      long_description = "A toolbox of useful functions for geospace data analysis. Check individual modules for more info.",
-      setup_requires=['pytest-runner'],
-      tests_require=['pytest'],
+      long_description = ("A toolbox for geospace data analysis."
+                          +" Check individual modules for more info."),
       install_requires=['numpy','matplotlib','scipy','requests'],
       packages=['geospacepy'],
       package_dir={'geospacepy' : 'geospacepy'},

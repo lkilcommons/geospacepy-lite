@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>terrestrial_spherical &#8212; geospacepy-lite 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="rotations" href="rotations.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rotations.html" title="rotations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="terrestrial-spherical">
+<h1>terrestrial_spherical<a class="headerlink" href="#terrestrial-spherical" title="Permalink to this headline">¶</a></h1>
+<p>This module contains various routines for manipulating vectors related to
+positions and observations on and around the earth <em>under the approximation that
+the earth is a sphere with radius 6371.2 kilometers</em></p>
+<dl class="simple">
+<dt>The spherical assumption implies the following:</dt><dd><ul class="simple">
+<li><p>All latitudes are geo*centric* not geo*detic*</p></li>
+<li><dl class="simple">
+<dt>All altitudes are measured relative to the center of the earth,</dt><dd><p>not perpendicular to the earth’s surface</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>This module uses the following function input conventions:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>If an input is described as a vector, it is expected to be a numpy</dt><dd><p>array with the vector components as columns. This means
+a single vector would be an array of shape (1,3), and <em>n</em>
+vectors would be an array of shape (<em>n</em>,3)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="module-geospacepy.terrestrial_spherical">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-geospacepy.terrestrial_spherical" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="geospacepy.terrestrial_spherical.ecef2eci">
+<code class="sig-prename descclassname">geospacepy.terrestrial_spherical.</code><code class="sig-name descname">ecef2eci</code><span class="sig-paren">(</span><em class="sig-param">R_ECEF</em>, <em class="sig-param">jds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/terrestrial_spherical.html#ecef2eci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.terrestrial_spherical.ecef2eci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate a vector from cartesian Earth Centered Earth Fixed (ECEF) to
+Cartesian Earth Centered Inertial (ECI)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R_ECEF</strong> (<em>np.ndarray</em>) – Array of n three component vectors ( shape=(n,3) ) in ECEF</p></li>
+<li><p><strong>jds</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Time stamp (as julian date) for all (if float) or each (if array)
+of the vectors in R_ECEF</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>R_ECI</strong> – n three component vectors ( shape=(n,3) ) in ECI</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.terrestrial_spherical.ecef2enu">
+<code class="sig-prename descclassname">geospacepy.terrestrial_spherical.</code><code class="sig-name descname">ecef2enu</code><span class="sig-paren">(</span><em class="sig-param">R_ECEF</em>, <em class="sig-param">lats</em>, <em class="sig-param">lons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/terrestrial_spherical.html#ecef2enu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.terrestrial_spherical.ecef2enu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate n vectors from Earth Centered Earth Fixed (ECEF)
+to local east, north, up coordinates centered at one location if only a
+single lat/lon pair is passed, or n locations if lats and lons are
+arrays of length n</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R_ECEF</strong> (<em>np.ndarray</em>) – Array of n 3-component vectors (shape=(n,3)) in cartesian ECEF</p></li>
+<li><p><strong>lats</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Latitude(s) of ENU coordinates</p></li>
+<li><p><strong>lons</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Longitude(s) of ENU coordinates</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>R_ENU</strong> – Array of n 3-component vecotrs (shape=(n,3)) in cartesian ENU
+(R_ENU[:,0] is eastward component, R_ENU[:,1] is northward, etc.)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.terrestrial_spherical.ecef_cart2spherical">
+<code class="sig-prename descclassname">geospacepy.terrestrial_spherical.</code><code class="sig-name descname">ecef_cart2spherical</code><span class="sig-paren">(</span><em class="sig-param">R_ECEF</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/terrestrial_spherical.html#ecef_cart2spherical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.terrestrial_spherical.ecef_cart2spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform a vector in cartesian Earth Centered Earth Fixed (ECEF)
+to geocentric spherical (a.k.a geographic coordinates)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>R_ECEF</strong> (<em>np.ndarray</em>) – Array of n three component vectors ( shape=(n,3) ) in cartesian
+ECEF</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>lats</strong> (<em>np.ndarray</em>) – Array of n latitude values (shape=(n,))</p></li>
+<li><p><strong>lons</strong> (<em>np.ndarray</em>) – Array of n longitude values (shape=(n,)). Sign convention
+is ISO 6709 (west is negative)</p></li>
+<li><p><strong>rs</strong> (<em>np.ndarray</em>) – Array of n radii (distance from center of the earth)
+(shape=(n,))
+(same units as R_ECEF)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.terrestrial_spherical.ecef_spherical2cart">
+<code class="sig-prename descclassname">geospacepy.terrestrial_spherical.</code><code class="sig-name descname">ecef_spherical2cart</code><span class="sig-paren">(</span><em class="sig-param">lats</em>, <em class="sig-param">lons</em>, <em class="sig-param">rs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/terrestrial_spherical.html#ecef_spherical2cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.terrestrial_spherical.ecef_spherical2cart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform n positions in geocentric spherical, a.k.a. spherical Earth
+Centered Earth Fixed (ECEF), a.k.a geographic to cartesian Earth Centered Earth
+Fixed (ECEF)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lats</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Array of n latitude values (shape=(n,))</p></li>
+<li><p><strong>lons</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Array of n longitude values (shape=(n,)). Sign convention
+is ISO 6709 (west is negative)</p></li>
+<li><p><strong>rs</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Array of n radii (distance from center of the earth)
+(shape=(n,))</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>R_ECEF</strong> (<em>np.ndarray</em>) – Array of n three component vectors ( shape=(n,3) ) in cartesian
+ECEF</p></li>
+<li><p><em>.. note::</em> – Within the code the ISO 31-11 convention for theta (polar, zero
+at positive z axis), and phi (azimuthal, zero at positive x axis)
+is used</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.terrestrial_spherical.eci2ecef">
+<code class="sig-prename descclassname">geospacepy.terrestrial_spherical.</code><code class="sig-name descname">eci2ecef</code><span class="sig-paren">(</span><em class="sig-param">R_ECI</em>, <em class="sig-param">jds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/terrestrial_spherical.html#eci2ecef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.terrestrial_spherical.eci2ecef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate a vector from cartesian Earth Centered Inertial (ECI) to
+cartesian Earth Centered Earth Fixed (ECEF)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R_ECI</strong> (<em>np.ndarray</em>) – Array of n three component vectors ( shape=(n,3) ) in ECI</p></li>
+<li><p><strong>jds</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Time stamp (as julian date) for all (if float) or each (if array)
+of the vectors in R_ECEF</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>R_ECEF</strong> – n three component vectors ( shape=(n,3) ) in ECEF</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.terrestrial_spherical.enu2ecef">
+<code class="sig-prename descclassname">geospacepy.terrestrial_spherical.</code><code class="sig-name descname">enu2ecef</code><span class="sig-paren">(</span><em class="sig-param">R_ENU</em>, <em class="sig-param">lats</em>, <em class="sig-param">lons</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/terrestrial_spherical.html#enu2ecef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.terrestrial_spherical.enu2ecef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate n vectors from East North Up (ENU) (relative to location(s)
+specified by lats and lons) to Earth Centered Earth Fixed (ECEF) coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R_ENU</strong> (<em>np.ndarray</em>) – Array of n 3-component vectors (shape=(n,3)) in cartesian
+ENU</p></li>
+<li><p><strong>lats</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Latitude(s) which define ENU directions</p></li>
+<li><p><strong>lons</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – Longitude(s) which define ENU direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>R_ECEF</strong> – Array of n 3-component vecotrs (shape=(n,3)) in cartesian ECEF</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">terrestrial_spherical</a><ul>
+<li><a class="reference internal" href="#module-geospacepy.terrestrial_spherical">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rotations.html"
+                        title="previous chapter">rotations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/terrestrial_spherical.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rotations.html" title="rotations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Liam Kilcommons.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

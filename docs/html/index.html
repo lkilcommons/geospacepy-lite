@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to geospacepy-lite’s documentation! &#8212; geospacepy-lite 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="special_datetime" href="special_datetime.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="special_datetime.html" title="special_datetime"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-geospacepy-lite-s-documentation">
+<h1>Welcome to geospacepy-lite’s documentation!<a class="headerlink" href="#welcome-to-geospacepy-lite-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Geospacepy-lite is a toolbox of loosely-related modules which were originally
+created for analyzing in-situ sensed electrodynamics and particle precipitation data from spacecraft, but are general-purpose enough to useful for various common geospace data analysis tasks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Where multiple versions of an algorithm exist, this code generally implements the most approximate simple-minded version.</p>
+</div>
+<p>The dependacies of the package are limited as much as possible to the core scientific python packages like the standard library, numpy, and matplotlib.</p>
+<p>Algorithms implemented in Geospacepy-lite come from many sources, and I attempt to cite each algorithm within it’s docstring, but a majority of them are from:</p>
+<p>Vallado, D. A., &amp; McClain, W. D. (2007). Fundamentals of Astrodynamics and Applications (3rd edition). Hawthorne, Calif.: Microcosm Press/Springer.</p>
+<p>Several conventions are used throughout geospacepy. These conventions are enforced in preference to adding, for instance, adding additional optional arguments.</p>
+<ul class="simple">
+<li><p>Angles are assumed radians <em>except</em>:</p>
+<ul>
+<li><p>Latitudes (assumed degrees)</p></li>
+<li><p>Longitudes (assumed degrees)</p></li>
+<li><p>Localtimes (when used as azimuth, i.e. replacing Longitude)(assumed hours)</p></li>
+</ul>
+</li>
+<li><p>Sign/Nomenclature conventions reflect ISO standards (when possible):</p>
+<ul>
+<li><p>Longitudes are assumed to follow ISO 6709 (negative is west) convention</p></li>
+</ul>
+</li>
+<li><p>Times are assumed to be approximate Universal Time (<em>leap seconds NOT handled</em>)</p></li>
+<li><p>Constants are specified in SI units (meters for lengths, kilograms for mass)</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="special_datetime.html">special_datetime</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="special_datetime.html#module-geospacepy.special_datetime">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sun.html">sun</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sun.html#module-geospacepy.sun">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rotations.html">rotations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rotations.html#module-geospacepy.rotations">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="terrestrial_spherical.html">terrestrial_spherical</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="terrestrial_spherical.html#module-geospacepy.terrestrial_spherical">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spherical_geometry.html">spherical_geometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spherical_geometry.html#module-geospacepy.spherical_geometry">API</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to geospacepy-lite’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="special_datetime.html"
+                        title="next chapter">special_datetime</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="special_datetime.html" title="special_datetime"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Liam Kilcommons.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

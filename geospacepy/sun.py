@@ -1,3 +1,5 @@
+# (C) 2020 University of Colorado AES-CCAR-SEDA (Space Environment Data Analysis) Group
+# Written by Liam M. Kilcommons
 import numpy as np
 import datetime
 from geospacepy.special_datetime import datetime2jd,dt_j2000

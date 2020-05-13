@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>rotations &#8212; geospacepy-lite 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="terrestrial_spherical" href="terrestrial_spherical.html" />
+    <link rel="prev" title="sun" href="sun.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="terrestrial_spherical.html" title="terrestrial_spherical"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sun.html" title="sun"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rotations">
+<h1>rotations<a class="headerlink" href="#rotations" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a mechanism for simple coordinate transformations.
+“Simple” here means coordinate tranformations which can be described
+as any number of serial rotations of a different coordinate frame
+about the x,y, or z axes.</p>
+<p>There are many subtleties involved in describing coordinate rotation
+mathematically (<a class="reference external" href="https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities">https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities</a>)</p>
+<dl class="simple">
+<dt>This module aims to emulate the convention used in the Vallado textbook:</dt><dd><ul class="simple">
+<li><p>Rotations are of the coordinate system “beneath” the vector</p></li>
+<li><dl class="simple">
+<dt>Rotation matrices (<strong>M</strong>) are to be “pre-multiplied” (<strong>M</strong> v ) by column</dt><dd><p>vectors (v)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="module-geospacepy.rotations">
+<span id="api"></span><h2>API<a class="headerlink" href="#module-geospacepy.rotations" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="geospacepy.rotations.rot">
+<code class="sig-prename descclassname">geospacepy.rotations.</code><code class="sig-name descname">rot</code><span class="sig-paren">(</span><em class="sig-param">angles</em>, <em class="sig-param">axis</em>, <em class="sig-param">vecs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/rotations.html#rot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.rotations.rot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return representation of 3-component vectors vecs in a
+coordinate systems which has been rotated an angle (angle), about
+axis (axis)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angles</strong> (<em>float</em><em> or </em><em>np.ndarray</em>) – The angle(s) (in radians) which the coordinate system
+will be rotated by. For single float values, all <cite>vecs</cite> will be
+rotated by the same angle</p></li>
+<li><p><strong>axis</strong> (<em>int</em>) – The axis (0,1,2) about which to rotate the coordinate system</p></li>
+<li><p><strong>vecs</strong> (<em>np.ndarray</em>) – Array of <em>n</em> 3-component vectors for which the components in the
+rotated coordinate frame will be returned (shape=(<em>n</em>,3))</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>rotated_vecs</strong> – The components of <cite>vecs</cite> in the rotated frame (shape=(<em>n</em>,3))</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.rotations.rot1">
+<code class="sig-prename descclassname">geospacepy.rotations.</code><code class="sig-name descname">rot1</code><span class="sig-paren">(</span><em class="sig-param">angles</em>, <em class="sig-param">vecs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/rotations.html#rot1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.rotations.rot1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for rotation about axis 0</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.rotations.rot2">
+<code class="sig-prename descclassname">geospacepy.rotations.</code><code class="sig-name descname">rot2</code><span class="sig-paren">(</span><em class="sig-param">angles</em>, <em class="sig-param">vecs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/rotations.html#rot2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.rotations.rot2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for rotation about axis 1</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.rotations.rot3">
+<code class="sig-prename descclassname">geospacepy.rotations.</code><code class="sig-name descname">rot3</code><span class="sig-paren">(</span><em class="sig-param">angles</em>, <em class="sig-param">vecs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/rotations.html#rot3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.rotations.rot3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shorthand for rotation about axis 2</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="geospacepy.rotations.rotmat">
+<code class="sig-prename descclassname">geospacepy.rotations.</code><code class="sig-name descname">rotmat</code><span class="sig-paren">(</span><em class="sig-param">angle</em>, <em class="sig-param">axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/geospacepy/rotations.html#rotmat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#geospacepy.rotations.rotmat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return 3x3 elementary rotation matrix (<cite>M</cite>),
+which when pre-multiplied (<cite>M</cite> * v) by a 3x1 column vector (v)
+returns the new components of v in a coordinate system
+which has been rotated through an angle (angle) in <em>radians</em>
+about axis (axis), relative to the vector’s native coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> (<em>float</em>) – The angle (in radians) to rotate the coordinate axes by</p></li>
+<li><p><strong>axis</strong> (<em>int</em>) – The axis (0,1,2) about which the rotation should be performed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>M</strong> – The rotation matrix</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray, shape=(3,3)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Positive angles represent rotations according the the right hand rule
+(the directions of the fingers if the thumb is the axis)</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">rotations</a><ul>
+<li><a class="reference internal" href="#module-geospacepy.rotations">API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sun.html"
+                        title="previous chapter">sun</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="terrestrial_spherical.html"
+                        title="next chapter">terrestrial_spherical</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rotations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="terrestrial_spherical.html" title="terrestrial_spherical"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sun.html" title="sun"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">geospacepy-lite 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Liam Kilcommons.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>
