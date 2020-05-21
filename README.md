@@ -41,7 +41,12 @@ Calculations for positions and measurements on the earth and in near-earth space
 
 ### SPHERICAL_GEOMETERY ###
 
-Calculations (distances,areas,integrals) over the surface of a sphere
+Calculations on the surface of a sphere:
+
+* Great circle distance between two lat/lon points
+* Midpoint between two lat/lon points on a great circle
+* Area of a spherical 'rectangle'
+* Surface integral of data on a regular lat/lon grid
 
 ### SATPLOTTOOLS ###
 
