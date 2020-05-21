@@ -34,8 +34,6 @@ Rotate coordinate axes of any number of 3 component vectors
 
 ### TERRESTRIAL_SPHERICAL ###
 
-Calculations for positions and measurements on the earth and in near-earth space. 
-
 * Coordinate transformations for earth centered inertial (ECI) and earth centered earth fixed (ECEF) coordinate frames
 * Coordinate transformations for geographic latitudes/longitudes assuming a spherical earth
 
