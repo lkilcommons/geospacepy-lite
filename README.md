@@ -12,15 +12,40 @@ Geospacepy is MIT open source licensed software. The usual legal no-warranties, 
 
 ### OMNIREADER ###
 
-OmniReader has been moved to it's own seperate package (https://github.com/lkilcommons/nasaomnireader)
+OmniReader used to be part of this package, but it has been moved to it's own seperate package (https://github.com/lkilcommons/nasaomnireader)
 
 ### SPECIALDATETIME ###
 
-This is a very basic set of utilities for handling numpy arrays of Python datetimes, and converting from and to other time formats, such as MATLAB datenumber, day-of-year, and Julian date. There are other tools which do this, but specialdatetime.py has the advantage of being very lightweight.
+Utilities for handling numpy arrays of Python datetimes, and converting from and to other time formats, such as MATLAB datenumber, day-of-year, and Julian date.
+
+### SUN ###
+
+Calculate various solar-position-related parameters
+
+* Solar position (imlpements the Astronomical Almanac Low-Accuracy Algorithm)
+* Greenwich hour angle
+* Local hour angle
+* Local mean solar time
+* Solar zenith angle
+
+### ROTATIONS ###
+
+Rotate coordinate axes of any number of 3 component vectors
+
+### TERRESTRIAL_SPHERICAL ###
+
+Calculations for positions and measurements on the earth and in near-earth space. 
+
+* Coordinate transformations for earth centered inertial (ECI) and earth centered earth fixed (ECEF) coordinate frames
+* Coordinate transformations for geographic latitudes/longitudes assuming a spherical earth
+
+### SPHERICAL_GEOMETERY ###
+
+Calculations (distances,areas,integrals) over the surface of a sphere
 
 ### SATPLOTTOOLS ###
 
-This is my plotting library. It builds on the functionality provided by matplotlib. It has methods for doing things such as polar plots with latitude as the radial direction and local time as the azimuthal (so called 'dialplots') and convenience functions for conversion between latitude and longitude/local time and cartesian.
+Plotting library building on the functionality provided by matplotlib. Methods for polar plots with latitude as the radial direction and local time as the azimuthal (so called 'dialplots') and convenience functions for conversion between latitude and longitude/local time and plot coorindates.
 
 ### Installation Instructions ###
 
