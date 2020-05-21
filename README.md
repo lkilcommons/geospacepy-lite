@@ -1,18 +1,18 @@
-# Geospacepy #
+# Geospacepy-lite #
 
 [![Build Status](https://travis-ci.org/lkilcommons/geospacepy-lite.svg?branch=master)](https://travis-ci.org/lkilcommons/geospacepy-lite)
 
-### What is this repository for? ###
-
-Geospacepy is a small library of python functions for doing space science data analysis. It is also a dependency of several other applications.
+A small library of python functions for doing space science data analysis
 
 ### Rules of the Road ###
 
-Geospacepy is MIT open source licensed software. The usual legal no-warranties, no-guarantees provisions apply. Though this software is indended for use in academic research it has not been peer-reviewed, there may be errors in calculations.  
+Geospacepy-lite is MIT open source licensed software. The usual legal no-warranties, no-guarantees provisions apply. Many caluclations have been verified in the unit tests using literature reference values, but not all algorithms can be tested in this way. Calculations may still have errors.
+
+## Modules in Geospacepy-lite ###
 
 ### OMNIREADER ###
 
-OmniReader used to be part of this package, but it has been moved to it's own seperate package (https://github.com/lkilcommons/nasaomnireader)
+Moved to it's own seperate package (https://github.com/lkilcommons/nasaomnireader)
 
 ### SPECIALDATETIME ###
 
