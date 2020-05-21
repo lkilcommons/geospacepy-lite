@@ -6,7 +6,7 @@ A small library of python functions for doing space science data analysis
 
 ### Rules of the Road ###
 
-Geospacepy-lite is MIT open source licensed software. The usual legal no-warranties, no-guarantees provisions apply. Many caluclations have been verified in the unit tests using literature reference values, but not all algorithms can be tested in this way. Calculations may still have errors.
+Geospacepy-lite is MIT open source licensed software. The usual legal no-warranties, no-guarantees provisions apply. Many caluclations have been verified in the unit tests using literature reference values, but not all algorithms have or can be tested in this way.
 
 ## Modules in Geospacepy-lite ###
 
