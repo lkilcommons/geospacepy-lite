@@ -500,9 +500,12 @@ def hairplot(ax,lat,lt,C,hemisphere,max_size=10,max_val=None,vmin=None,vmax=None
     #Implement filtering very small values out
     above_min = np.abs(C) > min_displayed
 
+    if 'alpha' not in kwargs:
+        kwargs['alpha']=.75
+
     norm = Normalize(vmin=vmin,vmax=vmax)
     Q = ax.quiver(X[above_min],Y[above_min],X1[above_min],Y1[above_min],C[above_min],
-        angles='xy',units='xy',width=.4,scale_units='xy',scale=1,alpha=.75,headwidth=0,headlength=0,norm=norm,**kwargs)
+        angles='xy',units='xy',width=.4,scale_units='xy',scale=1,headwidth=0,headlength=0,norm=norm,**kwargs)
 
     #Q appears to not actually create a mappable??
     mappable = matplotlib.cm.ScalarMappable(norm=Q.norm,cmap=Q.cmap)

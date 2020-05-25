@@ -15,11 +15,11 @@ created for analyzing in-situ sensed electrodynamics and particle precipitation 
 
 The dependacies of the package are limited as much as possible to the core scientific python packages like the standard library, numpy, and matplotlib.
 
-Algorithms implemented in Geospacepy-lite come from many sources, and I attempt to cite each algorithm within it's docstring, but a majority of them are from:
+Algorithms implemented in Geospacepy-lite come from many sources. I attempt to cite each algorithm within it's docstring. A majority are from:
 
 Vallado, D. A., & McClain, W. D. (2007). Fundamentals of Astrodynamics and Applications (3rd edition). Hawthorne, Calif.: Microcosm Press/Springer.
 
-Several conventions are used throughout geospacepy. These conventions are enforced in preference to adding, for instance, adding additional optional arguments.
+Several conventions are used throughout geospacepy. These conventions are enforced in preference to adding, for instance, additional optional arguments.
 
 - Angles are assumed radians *except*:
 
