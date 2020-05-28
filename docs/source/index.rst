@@ -34,6 +34,7 @@ To keep geospacepy-lite maintainable, these conventions are enforced:
 - ISO standards:
 
   * ISO 6709 (negative longitude means west longitude)
+  * ISO 31-11 (spherical coordinate nomenclature: r, theta, phi, phi is azimuth)
 
 - Times are assumed to be Universal Time (no timezones)
 
@@ -50,6 +51,7 @@ To keep geospacepy-lite maintainable, these conventions are enforced:
    rotations
    terrestrial_spherical
    spherical_geometry
+   satplottools
 
 Indices and tables
 ==================
