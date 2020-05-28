@@ -35,7 +35,9 @@ To keep geospacepy-lite maintainable, these conventions are enforced:
 
   * ISO 6709 (negative longitude means west longitude)
 
-- Times are assumed to be Universal Time
+- Times are assumed to be Universal Time (no timezones)
+
+- Preferred time representation is julian date (use special_datetime to convert)
 
 - SI units for physical quantities (e.g. earth radius is in meters)
 
