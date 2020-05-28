@@ -195,7 +195,7 @@ def enu2ecef(R_ENU,lats,lons):
 
     R_ECEF : np.ndarray
 
-        Array of n 3-component vecotrs (shape=(n,3)) in cartesian ECEF
+        Array of n 3-component vectors (shape=(n,3)) in cartesian ECEF
     """
 
     #This works even if lon is < -360, as numpy modulus returns
