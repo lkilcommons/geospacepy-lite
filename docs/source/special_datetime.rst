@@ -1,23 +1,33 @@
 special_datetime
 ================
 
-This module converts between various time formats. It has two forms of each type of time conversion, a function which takes and returns only Python primatives (float,int) or datetime.datetime objects. These are the 'scalar' versions of each time conversion. There are also 'vector' implementations of each unit conversion, which take and return numpy arrays of the same types as their 'scalar' equivalents.
+This module converts between Python datetime and other time represenations.
 
-Time types handled (abbreviation: description) :
+It has two forms of each time conversion:
+
+* scalar : function takes and returns only Python primatives (float,int) or datetime.datetime objects
+* vector : functions generated programatically from scalar functions which take numpy arrays or lists and return numpy arrays
+
+Array shape convention for vector functions
+-------------------------------------------
+
+Vector functions output arrays which match the shape of the input.
+If the inputs are lists or other iterables that don't have a shape, a flat
+(1D) array is returned.
+
+Time types handled (abbreviation: description)
+----------------------------------------------
 
 * ymdhms: year,month,day,hour,minute,second
-* sod: second of day (0-86399) 
-* doy: decimal day of year
-* jd: julian date (Vallado, Algorithm 22) (jd)
-* j2000: j2000 (julian date - julian date of 12:00 1-1-2000)
-* datenum: matlab datenumber 
+* sod: decimal (float) second of day
+* soy: decimal (float) second of year  
+* doy: decimal (float) day of year
+* jd: julian date (days since 12:00 PM on January 1, 4713 B.C.)
+* j2000: j2000 (julian date, but relative to January 1, 2000 at 12:00 PM)
+* datenum: matlab datenumber
 
-.. note::
-
-	The code is only guaranteed to be able to convert between datetime and each of the above systems (it doesn't implement, for 
-	example, julian date to MATLAB datenumber)
-
-The naming convention for special_datetime functions is:
+Naming convention
+-----------------
 
 .. code-block:: python
 
@@ -27,6 +37,14 @@ For example:
 	
 * datetime2jd - converts from datetime.datetime to julian date
 * sodarr2datetime - converts an array of seconds of the day to an array of datetimes
+
+Contribution
+------------
+    
+If you are interested in adding a new time conversion to this module,
+please submit a pull request adding (1) the scalar version of the 
+time conversion to and from Python datetime (2) a unit test which tests
+your time conversion.
 
 API
 ---

@@ -132,7 +132,7 @@ def _vectorized_2datetime(conversion_func):
                               +'function.'))
 
         if isinstance(numerical_times,float) or isinstance(numerical_times,int):
-            raise ValueError(('This functions is for lists/arrays'
+            raise ValueError(('This function is for lists/arrays'
                               +'Use {}'.format(conversion_func.__name__)
                               +'for single (scalar) inputs'))
 
