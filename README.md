@@ -1,7 +1,6 @@
 # Geospacepy-lite #
 
 [![Build Status](https://travis-ci.org/lkilcommons/geospacepy-lite.svg?branch=master)](https://travis-ci.org/lkilcommons/geospacepy-lite)
-
 [![Documentation Status](https://readthedocs.org/projects/geospacepy-lite/badge/?version=level_up_code_and_docs)](https://geospacepy-lite.readthedocs.io/en/level_up_code_and_docs/?badge=level_up_code_and_docs)
 
 A small library of python functions for doing space science data analysis
