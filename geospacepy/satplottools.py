@@ -254,13 +254,23 @@ def timepos_ticklabels(ax,t,lat,ltlon,fs=10):
     matplotlib.artist.setp(ax.get_xmajorticklabels(),size=fs,rotation=0)
 
 def multiline_timelabels(ax,tdata,xdata,strffmt='%H:%M',xfmt=['%.1f']):
-    """
-    Adds additional lines to the labels of an existing axes.
-    tdata - data that was passed to the plot function, must be an array of datetime objects
-    xdata - any number of columns of additional data to be added to labels. Must have same number
-                of rows as tdata.
-    strffmt - format specification to datetime.datetime.strftime for time labels
-    xfmt - list of formats for each column of xdata
+    """Adds additional lines to the labels of an existing axes.
+    
+    INPUTS
+    ------
+
+    tdata : numpy.ndarray
+        data that was passed to the plot function, must be an array of datetime objects
+    xdata : numpy.ndarray
+        any number of columns of additional data to be added to labels. Must have same number of rows as tdata.
+    strffmt : str
+        format specification to datetime.datetime.strftime for time labels
+    xfmt : list
+        list of formats for each column of xdata
+
+    RETURNS
+    -------
+
     """
     #Manually create the tick labels
     #There is probably a better way to do this with FuncFormatter, but I couldn't
@@ -297,20 +307,28 @@ def multiline_timelabels(ax,tdata,xdata,strffmt='%H:%M',xfmt=['%.1f']):
 
 def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False,
     draw_circles=True,latlabels=True):
-    """
-    Draws the dialplot and labels the latitudes
+    """Draws the dialplot and labels the latitudes
+    
+    PARAMETRS
+    ---------
+    
+    ax : matplotlib.axes.Axes
+        Axes object to plot on
+    minlat : {60,50,40}, optional
+        Latitude of largest ring of dialplot
+    padding : int, optional
+        Amount of extra space to put around the plot ( in plot units )
+    fslt : int,optional
+        Font size for hour labels
+    fslat : int,optional
+        Font size for latitude labels
+    southern_hemi : bool,optional
+        Defaults to False, put negative signs on latitude labels
+    draw_circles : bool,optional
+        Draw the circles at the labeled latitudes (default: True)
+    latlabels : bool,optional
+        Draw latitude labels on plot (default: True)
 
-        minlat : {60,50,40}, optional
-            Latitude of largest ring of dialplot
-        padding : int, optional
-            Amount of extra space to put around the plot
-            Used with xlim so is in plot units
-        fslt : int,optional
-            Font size for hour labels
-        fslat : int,optional
-            Font size for latitude labels
-        southern_hemi : bool,optional
-            Defualts to False, put negative signs on latitude labels
     """
     phi = linspace(0,2*pi,3000)
 
@@ -477,6 +495,7 @@ def hairplot(ax,lat,lt,C,hemisphere,max_size=10,max_val=None,vmin=None,vmax=None
     Makes top-down polar plots with vertical lines to indicate intensity and color along spacecraft track.
     Can handle either an array of colors or a variable of colors.
     """
+    
     #Draw the background dialplot on
     if dialplot:
         draw_dialplot(ax)
@@ -598,47 +617,48 @@ def vector_plot(ax,data,satname='dmsp',color='blue',latlim=-50.,max_vec_len=12.,
 
     PARAMETERS
     ----------
-        ax : matplotlib.axes
-            Thing we're going to plot on
-        data : numpy.ndarray
-            n x 5 array of spacecraft data
-            column 1 = time (UT sec of day)
-            column 2 = latitude (magnetic or otherwise)
-            column 3 = localtime (magnetic or local solar)
-            column 4 = eastward component of vector data
-            column 5 = northward component of vector data
-        satname : str, optional
-            Text to place at end of spacecraft track
-        latlim : float, optional
-            Largest ring of dial plot (set to negative to indicate
-                that data is for southern hemisphere)
-        secondCoord : str, optional
-            localtime or longitude
-        max_vec_len : float, optional
-            Maximum length of vector in plot coordinates (i.e. degrees latitude)
-        max_magnitude : float, optional
-            Value of sqrt(Vec_east**2+Vec_north**2) that will be associated with
-            a vector of length max_vec_len on plot (scaling factor)
-        min_displayed : float, optional
-            Value of sqrt(Vec_east**2+Vec_north**2) that represents the threshold for
-            'noise' level measurements. The code will not display vectors below this
-            value to reduce visual clutter.
-        reference_vector_len : float, optional
-            The size of the reference vector in the lower left of the plot
-        reference_vector_label : str, optional
-            Label for reference vector
-        labeljustify : {'left','right','auto'}, optional
-            Where to position the satname at the end of the track
-        labeltrack : bool, optional
-            Draw the label at the end of track if True
-        fontsize : int, optional
-            Size of fonts for labels
-        skip : int, optional
-            Cadence of vectors to plot, i.e. skip=2 plots every other vector, except for the ten largest
-        plottime : boolean, optional
-            Plot the start time of the pass at the first point
-        col2isnorth : boolean, optional
-            Assume that the 5th column is northward, if false, assumes it's radial (i.e. equatorward, i.e. Apex d2)
+    
+    ax : matplotlib.axes
+        Thing we're going to plot on
+    data : numpy.ndarray
+        n x 5 array of spacecraft data
+        column 1 = time (UT sec of day)
+        column 2 = latitude (magnetic or otherwise)
+        column 3 = localtime (magnetic or local solar)
+        column 4 = eastward component of vector data
+        column 5 = northward component of vector data
+    satname : str, optional
+        Text to place at end of spacecraft track
+    latlim : float, optional
+        Largest ring of dial plot (set to negative to indicate
+            that data is for southern hemisphere)
+    secondCoord : str, optional
+        localtime or longitude
+    max_vec_len : float, optional
+        Maximum length of vector in plot coordinates (i.e. degrees latitude)
+    max_magnitude : float, optional
+        Value of sqrt(Vec_east**2+Vec_north**2) that will be associated with
+        a vector of length max_vec_len on plot (scaling factor)
+    min_displayed : float, optional
+        Value of sqrt(Vec_east**2+Vec_north**2) that represents the threshold for
+        'noise' level measurements. The code will not display vectors below this
+        value to reduce visual clutter.
+    reference_vector_len : float, optional
+        The size of the reference vector in the lower left of the plot
+    reference_vector_label : str, optional
+        Label for reference vector
+    labeljustify : {'left','right','auto'}, optional
+        Where to position the satname at the end of the track
+    labeltrack : bool, optional
+        Draw the label at the end of track if True
+    fontsize : int, optional
+        Size of fonts for labels
+    skip : int, optional
+        Cadence of vectors to plot, i.e. skip=2 plots every other vector, except for the ten largest
+    plottime : boolean, optional
+        Plot the start time of the pass at the first point
+    col2isnorth : boolean, optional
+        Assume that the 5th column is northward, if false, assumes it's radial (i.e. equatorward, i.e. Apex d2)
 
     """
     #if labeltext=='default':
@@ -917,11 +937,22 @@ def cubic_bez_arc(lat,azi1,azi2,lonorlt='lt'):
 def polarbinplot(ax,bin_edges,bin_values,hemisphere='N',lonorlt='lt',**kwargs):
     """
         Plots a collection of bins in polar coordinates on a dialplot
-        bin_edges - numpy.ndarray
-            Must have shape: n x 4 with columns:
-            bin_lat_start,bin_lat_end,bin_lonlt_start,bin_lonlt_end
-        lonorlt - 'lon' or 'lt'
-            Use longitude or localtime as azimuthal coordinate
+        
+    INPUTS
+    ------
+
+    bin_edges : numpy.ndarray
+        Must have shape [n x 4] with columns:
+        bin_lat_start,bin_lat_end,bin_lonlt_start,bin_lonlt_end
+    lonorlt : 'lon' or 'lt'
+        Use longitude or localtime as azimuthal coordinate
+    
+    RETURNS
+    -------
+
+    mappable : matplotlib.collections.PatchCollection
+        The collection of bin shapes (which can be fed to colorbar)
+
     """
     from matplotlib.path import Path
     from matplotlib.patches import PathPatch

@@ -7,8 +7,19 @@ low-earth-orbit spacecraft (Defense Meterology Satellite Program).
 .. warning::
 
     This is one of the oldest parts of geospacepy-lite. There is a lot of 
-    technical debt surrounding this code. It will be the target of future
-    improvements both to documentation and API.
+    technical debt surrounding this code. It does not use matplotlib's 
+    projection=polar to make polar plots. It manually makes polar plots
+    on a standard matplotlib axes.
 
-.. automodule:: geospacepy.satplottools
-    :members:
+.. autofunction:: geospacepy.satplottools.draw_dialplot
+
+.. autofunction:: geospacepy.satplottools.latlt2cart
+
+.. autofunction:: geospacepy.satplottools.latlon2cart
+
+.. autofunction:: geospacepy.satplottools.multiline_timelabels
+
+.. autofunction:: geospacepy.satplottools.vectorplot
+
+.. autofunction:: geospacepy.satplottools.polarbinplot
+
