@@ -11,7 +11,7 @@ mathematically (https://en.wikipedia.org/wiki/Rotation_matrix#Ambiguities)
 
 This module aims to emulate the convention used in the Vallado textbook:
     * Rotations are of the coordinate system "beneath" the vector
-    * Rotation matrices (**M**) are to be "pre-multiplied" (**M** v ) by column
+    * Rotation matrices ( **M** ) are to be "pre-multiplied" ( **M** v ) by column
         vectors (v)
 
 API
