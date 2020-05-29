@@ -76,11 +76,11 @@ def _great_circle_distance(location1,location2,lonorlt='lt'):
         C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
     return np.arccos(np.cos(a)*np.cos(b)+np.sin(a)*np.sin(b)*np.cos(C))
 
-def great_circle_distance_law_of_cosines(theta1,phi1,theta2,phi2):
+def _great_circle_distance_law_of_cosines(theta1,phi1,theta2,phi2):
     """Computes great circle distance between any number of paired 
     locations using the law of cosines. Warning:
     can be inaccurate for short distances. All angles in radians.
-    Greek letter convention is phi for azimuth/longitude.
+    Greek letter convention is theta for colatitude, phi for azimuth/longitude.
     """
     a = theta1
     b = theta2
@@ -89,11 +89,11 @@ def great_circle_distance_law_of_cosines(theta1,phi1,theta2,phi2):
     dist = np.arccos(np.cos(a)*np.cos(b)+np.sin(a)*np.sin(b)*np.cos(C))
     return dist
 
-def great_circle_distance_haversine_formula(theta1,phi1,theta2,phi2):
+def _great_circle_distance_haversine_formula(theta1,phi1,theta2,phi2):
     """Computes great circle distance between any number of paired
     locations using the haversine formula, which is known to be accurate
     for short distances. All angles in radians.
-    Greek letter convention is phi for azimuth/longitude
+    Greek letter convention is theta for colatitude, phi for azimuth/longitude
     """
     lambda1 = np.pi/2-theta1
     lambda2 = np.pi/2-theta2
@@ -143,8 +143,8 @@ def great_circle_distance(lat1,azi1,lat2,azi2,aziunit,algorithm='lawofcosines'):
 
     """
     algorithms = {
-                    'lawofcosines':great_circle_distance_law_of_cosines,
-                    'haversine':great_circle_distance_haversine_formula
+                    'lawofcosines':_great_circle_distance_law_of_cosines,
+                    'haversine':_great_circle_distance_haversine_formula
                 }
     if algorithm not in algorithms:
         raise ValueError('Invalid algorithm {}'.format(algorithm)
