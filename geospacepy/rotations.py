@@ -97,15 +97,15 @@ def rot(angles,axis,vecs):
     return rotated_vecs
 
 def rot1(angles,vecs):
-    """Shorthand for rotation about axis 0"""
+    """Shorthand for rotation about axis 0 (x / I / e1)"""
     return rot(angles,0,vecs)
 
 def rot2(angles,vecs):
-    """Shorthand for rotation about axis 1"""
+    """Shorthand for rotation about axis 1 (y / J / e2)"""
     return rot(angles,1,vecs)
 
 def rot3(angles,vecs):
-    """Shorthand for rotation about axis 2"""
+    """Shorthand for rotation about axis 2 (z / K / e3)"""
     return rot(angles,2,vecs)
 
 if __name__ == '__main__':
