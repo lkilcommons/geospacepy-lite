@@ -50,6 +50,7 @@ To keep geospacepy-lite maintainable, these conventions are enforced:
    sun
    rotations
    terrestrial_spherical
+   terrestrial_ellipsoidal
    spherical_geometry
    satplottools
 
