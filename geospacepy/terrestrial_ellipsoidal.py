@@ -5,7 +5,6 @@ from geospacepy.array_management import (CheckInputsAreThreeComponentVectors,
 ECC_EARTH_SQUARED = .006694385
 R_EARTH_MEAN_EQ = 63781370 #in m
 
-
 @CheckInputsAreThreeComponentVectors('R_ECEF')
 def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
     """This implements Algorithm 12 (pp.179) of Fundamentals of Astrodynamics 
@@ -17,26 +16,26 @@ def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
     PARAMETERS
     ----------
 
-    R_ECEF - np.ndarray, shape=(n,3)
+    R_ECEF : np.ndarray, shape=(n,3)
         n position vectors in cartesian ECEF, units must be meters
-    tol - float
+    tol : float
         Tolerance for iterative determination of geodetic latitude, in radians.
         The algorithm stops when the change in geodetic latitude from one
         iteration to the next is less than the tolerance. Defaults to 1e-7, 
         which is the value used in an example from the Vallado textbook 
         (Example 3-3)
-    maxiters - int
+    maxiters : int
         Maximum number of times the algorithm will attempt to refine the
         geodetic latitude before raising RuntimeError
     
     RETURNS
     -------
 
-    gdlats - np.ndarray, shape=(n,)
+    gdlats : np.ndarray, shape=(n,)
         Geodetic latitudes of each position in R_ECEF
-    gclons - np.ndarray, shape=(n,)
+    gclons : np.ndarray, shape=(n,)
         Geocentric longitudes of each position in R_ECEF
-    h_ellps - np.ndarray, shape=(n,)
+    h_ellps : np.ndarray, shape=(n,)
         Ellipsoidal height of each position in meters 
         (the distance between each position and the ground, 
         measured perpendicular to the surface of an ellipsoidal 

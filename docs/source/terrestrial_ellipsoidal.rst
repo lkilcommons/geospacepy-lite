@@ -1,4 +1,4 @@
-Terrestrial Ellipsoidal
+terrestrial_ellipsoidal
 =======================
 
 This module contains routines which more accurately represent positions
