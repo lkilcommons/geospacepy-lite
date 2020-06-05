@@ -1,9 +1,10 @@
 import numpy as np
+from warnings import warn
 from geospacepy.array_management import (CheckInputsAreThreeComponentVectors,
                                         BroadcastLenOneInputsToMatchArrayInputs)
 
 ECC_EARTH_SQUARED = .006694385
-R_EARTH_MEAN_EQ = 63781370 #in m
+R_EARTH_MEAN_EQ = 6378137 #in m
 
 @CheckInputsAreThreeComponentVectors('R_ECEF')
 def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
@@ -13,7 +14,7 @@ def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
     earth-fixed cartesian coordinates to geodetic latitude, geocentric
     longitude, and height above the surface of the earth.
     
-    PARAMETERS
+    Parameters
     ----------
 
     R_ECEF : np.ndarray, shape=(n,3)
@@ -28,7 +29,7 @@ def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
         Maximum number of times the algorithm will attempt to refine the
         geodetic latitude before raising RuntimeError
     
-    RETURNS
+    Returns
     -------
 
     gdlats : np.ndarray, shape=(n,)
@@ -40,11 +41,28 @@ def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
         (the distance between each position and the ground, 
         measured perpendicular to the surface of an ellipsoidal 
         approximation of the earth)
+
+    Warns
+    -----
+
+    UserWarning
+        If ECEF positions are below earth's surface (because it may be
+        the position was in kilometers instead of meters)
+
     """
 
     X = R_ECEF[:,0].flatten()
     Y = R_ECEF[:,1].flatten()
     Z = R_ECEF[:,2].flatten()
+
+    R = np.sqrt(X**2.+Y**2.+Z**2.)
+    if np.any(R<R_EARTH_MEAN_EQ):
+        warnstr = ('Apparently underground positions '
+                  +'were passed to ecef_cart2geodetic '
+                  +'( || R_ECEF || < {} m) '.format(R_EARTH_MEAN_EQ)
+                  +'if you did not mean to calculate underground '
+                  +'positions, check R_ECEF is in units of meters.')
+        warn(warnstr,UserWarning)
 
     # Projection of spacecraft position on equatorial plane
     R_eq = np.sqrt(X**2+Y**2)
