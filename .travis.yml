@@ -3,15 +3,17 @@ python:
   - "3.6"      # current default Python on Travis CI
   - "3.7"
   - "3.8"
-# command to install dependencies
+# command to install package or dependencies
 install:
-  - pip install pytest
-  - pip install pytest-cov
-  - pip install coveralls
   - python setup.py install
+# setup coverage harness
+before_script:
+  - pip install pytest
+  - pip install coverage
+  - pip install coveralls
 # command to run tests
 script:
-  - pytest --cov-config=.coveragerc --cov=geospacepy
+  - pytest 
 # command to submit coverage report to coveralls
 after_success:
   - coveralls
