@@ -10,7 +10,7 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - pytest --cov=geospacepy/
+  - pytest --cov
 # command to submit coverage report to coveralls
 after_success:
   - coveralls
