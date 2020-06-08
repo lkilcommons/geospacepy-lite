@@ -20,7 +20,7 @@ Utilities for handling numpy arrays of Python datetimes, and converting from and
 
 Calculate various solar-position-related parameters
 
-* Solar position (imlpements the Astronomical Almanac Low-Accuracy Algorithm)
+* Solar position (implements the Astronomical Almanac Low-Accuracy Algorithm)
 * Greenwich hour angle
 * Local hour angle
 * Local mean solar time
