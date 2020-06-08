@@ -5,7 +5,12 @@ python:
   - "3.8"
 # command to install dependencies
 install:
+  - pip install pytest-cov
+  - pip install coveralls
   - python setup.py install
 # command to run tests
 script:
-  - pytest
+  - pytest --cov=geospacepy/
+# command to submit coverage report to coveralls
+after_success:
+  - coveralls
