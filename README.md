@@ -2,8 +2,7 @@
 
 [![Build Status](https://travis-ci.org/lkilcommons/geospacepy-lite.svg?branch=master)](https://travis-ci.org/lkilcommons/geospacepy-lite)
 [![Documentation Status](https://readthedocs.org/projects/geospacepy-lite/badge/?version=level_up_code_and_docs)](https://geospacepy-lite.readthedocs.io/en/level_up_code_and_docs/?badge=level_up_code_and_docs)
-<a href='https://coveralls.io/github/lkilcommons/geospacepy-lite?branch=level_up_code_and_docs'><img src='https://coveralls.io/repos/github/lkilcommons/geospacepy-lite/badge.svg?branch=level_up_code_and_docs' alt='Coverage Status' /></a>
-
+[![Coverage Status](https://coveralls.io/repos/github/lkilcommons/geospacepy-lite/badge.svg?branch=level_up_code_and_docs&kill_cache=1)](https://coveralls.io/github/lkilcommons/geospacepy-lite?branch=level_up_code_and_docs)
 
 A small library of python functions for doing space science data analysis.
 
