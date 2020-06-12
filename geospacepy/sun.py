@@ -237,7 +237,7 @@ def local_hour_angle(jds,glons):
         See also Vallado Figure 3-9 (pp.157)
 
     """
-    sra,dec = solar_position_approx(jds)
+    sra,dec = solar_position_almanac(jds)
     gmst = greenwich_mean_siderial_time(jds) 
     
     #Greenwich Mean Sideral Time, Right Ascension, and longitude are
