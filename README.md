@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/geospacepy-lite/badge/?version=level_up_code_and_docs)](https://geospacepy-lite.readthedocs.io/en/level_up_code_and_docs/?badge=level_up_code_and_docs)
 [![Coverage Status](https://coveralls.io/repos/github/lkilcommons/geospacepy-lite/badge.svg?branch=level_up_code_and_docs&kill_cache=1)](https://coveralls.io/github/lkilcommons/geospacepy-lite?branch=level_up_code_and_docs)
 
-A small library of python functions for doing space science data analysis.
+A small library of python functions useful for geospace data analysis 
 
 ## Modules in Geospacepy-lite ###
 
@@ -20,7 +20,7 @@ Utilities for handling numpy arrays of Python datetimes, and converting from and
 
 Calculate various solar-position-related parameters
 
-* Solar position (imlpements the Astronomical Almanac Low-Accuracy Algorithm)
+* Solar position (implements the Astronomical Almanac Low-Accuracy Algorithm)
 * Greenwich hour angle
 * Local hour angle
 * Local mean solar time
