@@ -6,8 +6,6 @@
 
 A small library of python functions useful for geospace data analysis. 
 
-This package is particularly focused on implementing common algorithms in geospace sciences for students or researchers who are not yet experts in Python. To this end, it tries to have in-depth documentation, require only familiarity with core Python and numpy, and be as easy as possible to install.
-
 ## Modules in Geospacepy-lite ###
 
 ### OMNIREADER ###
