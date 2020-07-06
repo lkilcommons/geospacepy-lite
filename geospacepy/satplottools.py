@@ -923,7 +923,15 @@ def cubic_bez_arc(lat,azi1,azi2,lonorlt='lt'):
     maxazi = 24. if lonorlt=='lt' else 360.
 
     r = 90.-np.abs(lat)
-    theta = azi_difference(azi1,azi2,lonorlt=lonorlt)
+
+    if lonorlt=='lt':
+        aziunit = 'hour' 
+    elif lonorlt=='lon':
+        aziunit = 'deg'
+    else:
+        raise ValueError('Invalid lonorlt {}'.format(lonorlt))
+        
+    theta = angle_difference(azi1,azi2,aziunit)
     midpoint = azi1+theta/2.
     tangent_len = r*np.tan(theta*azi2rad/2) # Length of tangent line
     r_cp = np.sqrt(r**2+(tangent_len/2)**2)

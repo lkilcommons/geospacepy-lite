@@ -11,7 +11,7 @@ def _azifac(aziunit):
     elif aziunit=='rad':
         return 1.
     else:
-        raise ValueError(('Invalid aziunit {}'.format(degorhour)
+        raise ValueError(('Invalid aziunit {}'.format(aziunit)
                           +' valid values are deg or hour or rad'))
 
 def angle_difference(ang1,ang2,aziunit):
