@@ -46,7 +46,7 @@ Calculations on the surface of a sphere:
 
 ### SATPLOTTOOLS ###
 
-Plotting library building on the functionality provided by matplotlib. Methods for polar plots with latitude as the radial direction and local time as the azimuthal (so called 'dialplots') and convenience functions for conversion between latitude and longitude/local time and plot coorindates.
+Plotting library building on the functionality provided by matplotlib. Methods for polar plots with latitude as the radial direction and local time as the azimuthal (so called 'dialplots') and convenience functions for conversion between latitude and longitude/local time and plot coordinates.
 
 ### Installation Instructions ###
 
