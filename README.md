@@ -1,30 +1,52 @@
-# Geospacepy #
+# Geospacepy-lite #
 
 [![Build Status](https://travis-ci.org/lkilcommons/geospacepy-lite.svg?branch=master)](https://travis-ci.org/lkilcommons/geospacepy-lite)
+[![Documentation Status](https://readthedocs.org/projects/geospacepy-lite/badge/?version=level_up_code_and_docs)](https://geospacepy-lite.readthedocs.io/en/level_up_code_and_docs/?badge=level_up_code_and_docs)
+[![Coverage Status](https://coveralls.io/repos/github/lkilcommons/geospacepy-lite/badge.svg?branch=level_up_code_and_docs&kill_cache=1)](https://coveralls.io/github/lkilcommons/geospacepy-lite?branch=level_up_code_and_docs)
 
-### What is this repository for? ###
+A small library of python functions useful for geospace data analysis. 
 
-Geospacepy is a small library of python functions for doing space science data analysis. It is also a dependency of several other applications.
+## Modules in Geospacepy-lite ###
 
-### Rules of the Road ###
+### OMNIREADER ###
 
-Geospacepy is MIT open source licensed software. The usual legal no-warranties, no-guarantees provisions apply. Though this software is indended for use in academic research it has not been peer-reviewed, there may be errors in calculations.  
-
-### Python Version WARNING ###
-
-Geospacepy was developed using Python 2.7, Python 3 support was added programmatically using 2to3 script. I haven't tested extensively using Python 3. Unit tests pass but test coverage is pretty spotty still.
+Moved to it's own seperate package (https://github.com/lkilcommons/nasaomnireader)
 
 ### SPECIALDATETIME ###
 
-This is a very basic set of utilities for handling numpy arrays of Python datetimes, and converting from and to other time formats, such as MATLAB datenumber, day-of-year, and Julian date. There are other tools which do this, but specialdatetime.py has the advantage of being very lightweight.
+Utilities for handling numpy arrays of Python datetimes, and converting from and to other time formats, such as MATLAB datenumber, day-of-year, and Julian date.
+
+### SUN ###
+
+Calculate various solar-position-related parameters
+
+* Solar position (implements the Astronomical Almanac Low-Accuracy Algorithm)
+* Greenwich hour angle
+* Local hour angle
+* Local mean solar time
+* Solar zenith angle
+
+### ROTATIONS ###
+
+Rotate coordinate axes of any number of 3 component vectors
+
+### TERRESTRIAL_SPHERICAL ###
+
+* Coordinate transformations for earth centered inertial (ECI) and earth centered earth fixed (ECEF) coordinate frames
+* Coordinate transformations for geographic latitudes/longitudes assuming a spherical earth
+
+### SPHERICAL_GEOMETERY ###
+
+Calculations on the surface of a sphere:
+
+* Great circle distance between two lat/lon points
+* Midpoint between two lat/lon points on a great circle
+* Area of a spherical 'rectangle'
+* Surface integral of data on a regular lat/lon grid
 
 ### SATPLOTTOOLS ###
 
-This is my plotting library. It builds on the functionality provided by matplotlib. It has methods for doing things such as polar plots with latitude as the radial direction and local time as the azimuthal (so called 'dialplots') and convenience functions for conversion between latitude and longitude/local time and cartesian. 
-
-### ASTRODYNAMICS2 ###
-
-This is a library I made during a graduate-level astrodynamics course. It implements a few of the basics algorithms such as a very basic ECI-to-ECEF, as described in Vallado, Fundamentals for Astrodynamics and Applications. 
+Plotting library building on the functionality provided by matplotlib. Methods for polar plots with latitude as the radial direction and local time as the azimuthal (so called 'dialplots') and convenience functions for conversion between latitude and longitude/local time and plot coordinates.
 
 ### Installation Instructions ###
 

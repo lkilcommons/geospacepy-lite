@@ -10,14 +10,17 @@ from numpy import *
 import numpy as np
 import bisect
 import pdb
+# (C) 2020 University of Colorado AES-CCAR-SEDA (Space Environment Data Analysis) Group
+# Written by Liam M. Kilcommons
 import datetime
 import logging
 import matplotlib
 from matplotlib.colors import Normalize, LogNorm
 from scipy import interpolate
 from scipy import ndimage
-log = logging.getLogger('dmsp.satplottools')
-log.setLevel(logging.DEBUG)
+from geospacepy.spherical_geometry import (angle_difference,
+                                            angle_midpoint,
+                                            great_circle_distance)
 
 def dipole_tilt_angle(dts):
     """
@@ -48,35 +51,6 @@ def dipole_tilt_angle(dts):
         return phis[0]
     else:
         return np.array(phis).reshape(original_shape)
-
-def feature_find(x,nsigma=2.0):
-    """
-    Filter a timeseries for 'interesting' data by fitting an AR1 autoregressive model to it
-    and then returning a index array that selects only point which deviate from
-    the autoregressive prediction by nsigma innovation standard deviations (i.e. are
-    uncharacteristically innovative compared to the stationary model)
-    """
-    x = x.flatten()
-    fin = np.isfinite(x)
-    fininds = np.flatnonzero(fin)
-    x = x[fin]
-
-    #ar1 model: x_t+1 - mu_x = r1*(x_t-mu_x)+epsilon_t+1
-    mu_x = np.nanmean(x)
-    r1 = np.corrcoef(x[1:],x[:-1])
-    r1 = r1[0,1] # Pick the right component of the matrix
-    sigma_epsilon = np.sqrt((1-r1**2))*np.nanstd(x)
-    status = "R1 autocorrelation coeff for x is %f\n, standard deviation in x is %f\n, in innovation epsilon is %f" % (r1,
-            np.nanstd(x),sigma_epsilon)
-    #print status
-    #Predict the next value given the previous without any contribution from error
-    predx = x.copy()
-    predx[1:] = r1*(x[:-1]-mu_x)+mu_x
-    #Assign true to all finite values of x which passed the test
-    high_innovation = np.abs(x - predx) > nsigma*sigma_epsilon
-    #print np.abs(x-predx)
-    #print "%d/%d points passed filter" % (np.count_nonzero(high_innovation),len(x))
-    return fininds[high_innovation]
 
 def sathat(ut,pos,secondCoord='Longitude',lattype='geocentric',up_is_geodetic=False):
     """
@@ -228,16 +202,7 @@ def sathat(ut,pos,secondCoord='Longitude',lattype='geocentric',up_is_geodetic=Fa
             s_up[r:,] = np.dot(rotmat,s_up[r,:])
 
     return s_along,s_cross,s_up
-
-def print_passes(times,latitude,north_crossings,south_crossings):
-    """
-    Adjunct to parse_passes, prints out crossings dict of lists in a readable format.
-    Helps with debugging.
-    """
-    f = pp.figure()
-    pass
-
-
+    
 def simple_passes(latitude,half_or_full_orbit='half'):
 
     npts = len(latitude.flatten())
@@ -265,338 +230,6 @@ def simple_passes(latitude,half_or_full_orbit='half'):
 
     return xings
 
-def parse_passes(times,latitude,boundary_lat=50.,orbital_period=90*60.):
-    """
-    Divides spacecraft datapoints into passes:
-
-    PARAMETERS
-    ----------
-
-    times - numpy.ndarray(dtype=object)
-        timestamps of datapoints as python datetimes
-    latitude - numpy.ndarray(dtype=float)
-        latitude of spacecraft at timestamps in times
-    boundary_lat - float
-        latitude at which to begin or end each pass
-    orbital_period - float
-        the approximate orbital period in seconds
-        used to check if a pass has been missed
-
-    RETURNS
-    -------
-
-    north_crossings - list of dictionaries with keys
-                    ['s_time':datetime.datetime,
-                     'e_time':datetime.datetime,
-                     's_ind': integer
-                     'e_ind': integer
-                     's_frac':float,
-                     'e_frac':float,
-                     's_dt':float,
-                     'e_dt':float,
-                     's_dl':float,
-                     'e_dl':float]
-                    s_time is closest timestamp after poleward traveling crossing of boundary_lat
-                    e_time is closest timestamp before equatorward traveling crossing of boundary_lat
-                    s_ind is index into times for s_time
-                    e_ind is index into times for e_time
-                    s_frac is defined as:
-                        estimated true crossing time = s_frac*(times(s_ind)-times(s_ind-1)) + times(s_ind)
-                    e_frac is defined as:
-                        estimated true crossing time = e_frac*(times(e_ind+1)-times(e_ind)) + times(e_ind)
-                    s_dt - is the difference in time (in seconds) between the two points over which the poleward boundary crossing occured
-                    e_dt - is the difference in time (in seconds) between the two points over which the equatorward boundary crossing occured
-
-    south_crossings - same as north_crossings but for southern hemisphere
-
-
-    NOTES
-    -----
-
-    If there are datagaps and a pass start is found without a corresponding end or visa-versa
-    the code will give the corresponding dictionary keys the value None.
-
-
-    """
-    north_crossings = {'s_time':[],'e_time':[],
-                     's_ind':[],'e_ind':[],
-                     's_frac':[],'e_frac':[],
-                     's_dt':[],'e_dt':[],
-                     's_dl':[],'e_dl':[]}
-    south_crossings = {'s_time':[],'e_time':[],
-                     's_ind':[],'e_ind':[],
-                     's_frac':[],'e_frac':[],
-                     's_dt':[],'e_dt':[],
-                     's_dl':[],'e_dl':[]}
-    #pdb.set_trace()
-
-    ncrossings = 0
-    log.info("Beginning pass parse: %d datapoints, boundary_lat: %.1f, orbital_period: %s sec" %(len(times),boundary_lat,orbital_period))
-
-    for t in range(len(latitude)-1):
-
-        dt = (times[t+1]-times[t]).total_seconds()
-        dl = latitude[t+1]-latitude[t]
-        ldiff = abs(boundary_lat)-latitude[t]
-        if abs(ldiff) < abs(dl) and sign(ldiff)==sign(dl):
-            #Closer to the boundary than the next point,
-            #so we have found the boundary
-
-            #If boundary lat is lb = 50, and lat_t0 = 48 and lat_t1 = 51
-            #ldiff = lb - lat_t0 = 50 - 48 = 2
-            #dl = lat_t1 - lat_t0 = 51 - 48 = 3
-            #frac = ldiff/dl = 2/3
-
-            #If boundary lat is lb = 50, and lat_t0 = 51 and lat_t1 = 48
-            #ldiff = lb - lat_t0 = 50 - 51 = -1
-            #dl = lat_t1 - lat_t0 = 48 - 51 = -3
-            #frac = ldiff/dl = 1/3
-
-            #Edge case: mid pass data gap
-
-            #If boundary lat is lb = 0, and lat_t0 = -5 and lat_t1 = -19
-            #ldiff = lb - lat_t0 = 0 - -5 = 5
-            #dl = lat_t1 - lat_t0 = -19 - -5 = -14
-            #frac = ldiff/dl = 5/-14
-
-
-
-            #Sign of dl
-            #Poleward Traveling:
-            #North: 6 - 5 = 1 -> dl > 0 -> sign(dl)*sign(lat) > 0
-            #South: -6 - -5 = -1 -> dl < 0 -> sign(dl)*sign(lat) > 0
-            #Equatorward Traveling:
-            #North: 5 - 6 = -1 -> dl < 0 -> sign(dl)*sign(lat) < 0
-            #South: -5 - -6 = 1 -> dl > 0 -> sign(dl)*sign(lat) < 0
-            #Edge cases:
-            #S-to-N: -1 - 1 = -2 -> dl < 0 -> sign(dl)*sign(lat) > 0 -> Northward Equator Crossing -> Poleward Movement
-            #N-to-S: 1 - -1 = 2 -> dl > 0 -> sign(dl)*sign(lat) > 0 -> Southward Equator Crossing -> Poleward Movement
-
-            #Determine if we are moving equatorward
-            #or poleward
-
-            poleprod = dl*sign(latitude[t]) #+dl if moving poleward or crossing equator, -dl if moving equatorward
-            eqcross = sign(latitude[t])*sign(latitude[t+1]) #-1 if crossing equator, +1 otherwise
-
-            #Error Check
-            if not poleprod > 0 and not poleprod < 0:
-                raise RuntimeError('Invalid value of dl*sign(latitude[t]): %s' % (str(poleprod)))
-            if not eqcross > 0 and not eqcross < 0:
-                raise RuntimeError('Invalid value of sign(latitude[t])*sign(latitude[t+1]): %s' % (str(poleprod)))
-
-
-            #Check for any missed crossings
-            #Add a filler if we missed one
-
-
-            #Check last northern poleward
-            if len(north_crossings['s_time']) > 2:
-                last_delta = (north_crossings['s_time'][-1] - north_crossings['s_time'][-2]).total_seconds()
-                if last_delta > orbital_period*1.5:
-                    log.debug("Difference between last two northern pass starts is %.1f s > 1.5 %.1f s orbital period" % (last_delta,orbital_period) )
-                    log.info("Found missing northern poleward crossing after time=%s, lat=%.3f" % \
-                            (str(north_crossings['s_time'][-1]),latitude[north_crossings['s_ind'][-1]]))
-                    north_crossings['s_ind'].insert(-2,None)
-                    north_crossings['s_time'].insert(-2,None)
-                    north_crossings['s_frac'].insert(-2,None)
-                    north_crossings['s_dt'].insert(-2,None)
-                    north_crossings['s_dl'].insert(-2,None)
-
-            #Check last northern equatorward
-            if len(north_crossings['e_time']) > 2:
-                last_delta = (north_crossings['e_time'][-1] - north_crossings['e_time'][-2]).total_seconds()
-                if last_delta > orbital_period*1.5:
-                    log.debug("Difference between last two northern pass ends is %.1f s > 1.5 %.1f s orbital period" % (last_delta,orbital_period) )
-                    log.info("%d) Found missing northern equatorward crossing after time=%s, lat=%.3f" % \
-                            (t,str(north_crossings['e_time'][-2]),latitude[north_crossings['e_ind'][-2]]))
-                    north_crossings['e_ind'].insert(-2,None)
-                    north_crossings['e_time'].insert(-2,None)
-                    north_crossings['e_frac'].insert(-2,None)
-                    north_crossings['e_dt'].insert(-2,None)
-                    north_crossings['e_dl'].insert(-2,None)
-
-            #Check last southern poleward
-            if len(south_crossings['s_time']) > 2:
-                last_delta = (south_crossings['s_time'][-1] - south_crossings['s_time'][-2]).total_seconds()
-                if last_delta > orbital_period*1.5:
-                    log.debug("Difference between last two southern pass starts is %.1f s > 1.5 %.1f s orbital period" % (last_delta,orbital_period) )
-                    log.info("%d) Found missing southern poleward crossing after time=%s, lat=%.3f" % \
-                            (t,str(south_crossings['s_time'][-2]),latitude[south_crossings['s_ind'][-2]]))
-                    south_crossings['s_ind'].insert(-2,None)
-                    south_crossings['s_time'].insert(-2,None)
-                    south_crossings['s_frac'].insert(-2,None)
-                    south_crossings['s_dt'].insert(-2,None)
-                    south_crossings['s_dl'].insert(-2,None)
-
-            #Check last southern equatorward
-            if len(south_crossings['e_time']) > 2:
-                last_delta = (south_crossings['e_time'][-1] - south_crossings['e_time'][-2]).total_seconds()
-                if last_delta > orbital_period*1.5:
-                    log.debug("Difference between last two southern pass ends is %.1f s > 1.5 %.1f s orbital period" % (last_delta,orbital_period) )
-                    log.info("%d) Found missing southern equatorward crossing after time=%s, lat=%.3f" % \
-                            (t,str(south_crossings['e_time'][-2]),latitude[south_crossings['e_ind'][-2]]))
-                    south_crossings['e_ind'].insert(-2,None)
-                    south_crossings['e_time'].insert(-2,None)
-                    south_crossings['e_frac'].insert(-2,None)
-                    south_crossings['e_dt'].insert(-2,None)
-                    south_crossings['e_dl'].insert(-2,None)
-
-            if eqcross > 0:
-                if poleprod > 0: #Moving poleward
-                    log.info("%d) Found Poleward Crossing of Latitude %.3f Between:\ntime = %s,lat = %.3f\ntime = %s,lat = %.3f" % \
-                        (t,boundary_lat,str(times[t]),latitude[t],str(times[t+1]),latitude[t+1]))
-
-                    if sign(latitude[t])>0: #North
-                        north_crossings['s_ind'].append(t+1)
-                        north_crossings['s_time'].append(times[t+1])
-                        north_crossings['s_frac'].append(ldiff/dl)
-                        north_crossings['s_dt'].append(dt)
-                        north_crossings['s_dl'].append(dl)
-                    elif sign(latitude[t])<0: #South
-                        south_crossings['s_ind'].append(t+1)
-                        south_crossings['s_time'].append(times[t+1])
-                        south_crossings['s_frac'].append(ldiff/dl)
-                        south_crossings['s_dt'].append(dt)
-                        south_crossings['s_dl'].append(dl)
-
-                elif poleprod < 0: #Moving equatorward
-                    log.info("%d) Found Equatorward Crossing of Latitude %.3f Between:\ntime = %s,lat = %.3f\ntime = %s,lat = %.3f" % \
-                        (t,boundary_lat,str(times[t]),latitude[t],str(times[t+1]),latitude[t+1]))
-
-                    if sign(latitude[t])>0: #North
-                        north_crossings['e_ind'].append(t)
-                        north_crossings['e_time'].append(times[t])
-                        north_crossings['e_frac'].append(ldiff/dl)
-                        north_crossings['e_dt'].append(dt)
-                        north_crossings['e_dl'].append(dl)
-
-                    elif sign(latitude[t])<0: #South
-                        south_crossings['e_ind'].append(t)
-                        south_crossings['e_time'].append(times[t])
-                        south_crossings['e_frac'].append(ldiff/dl)
-                        south_crossings['e_dt'].append(dt)
-                        south_crossings['e_dl'].append(dl)
-
-            elif eqcross < 0:
-                #This case should really only occur when boundary_lat is actually zero
-                #or in the case of a data gap around the equator which has boundary points
-                #containing the boundary_lat
-                #In this case a single iteration of this loop assigns the end of a pass
-                #at index t and the start of the next at index t+1
-                if latitude[t]>0: #Crossed equator moving north to south
-                    log.info("%d) Found North-To-South Equator Crossing Between:\ntime = %s - %s\nlat = %.3f - %.3f" % \
-                        (t,times[t].strftime('%H:%M:%S'),times[t+1].strftime('%H:%M:%S'),latitude[t],latitude[t+1]))
-
-                    north_crossings['e_ind'].append(t)
-                    north_crossings['e_time'].append(times[t])
-                    north_crossings['e_frac'].append(ldiff/dl)
-                    north_crossings['e_dt'].append(dt)
-                    north_crossings['e_dl'].append(dl)
-
-                    south_crossings['s_ind'].append(t+1)
-                    south_crossings['s_time'].append(times[t+1])
-                    south_crossings['s_frac'].append(ldiff/dl)
-                    south_crossings['s_dt'].append(dt)
-                    south_crossings['s_dl'].append(dl)
-                elif latitude[t]<0: #Crossed equator moving south to north
-                    log.info("%d) Found South-To-North Equator Crossing Between:\ntime = %s - %s,lat = %.3f - %.3f" % \
-                        (t,times[t].strftime('%H:%M:%S'),times[t+1].strftime('%H:%M:%S'),latitude[t],latitude[t+1]))
-
-                    south_crossings['e_ind'].append(t)
-                    south_crossings['e_time'].append(times[t])
-                    south_crossings['e_frac'].append(ldiff/dl)
-                    south_crossings['e_dt'].append(dt)
-                    south_crossings['e_dl'].append(dl)
-
-                    north_crossings['s_ind'].append(t+1)
-                    north_crossings['s_time'].append(times[t+1])
-                    north_crossings['s_frac'].append(ldiff/dl)
-                    north_crossings['s_dt'].append(dt)
-                    north_crossings['s_dl'].append(dl)
-
-            if len(north_crossings['s_time'])>1:
-                log.debug('--Last N Poleward %s, %.3f' % (north_crossings['s_time'][-1].strftime('%H:%M:%S'),latitude[north_crossings['s_ind'][-1]]))
-            if len(north_crossings['e_time'])>1:
-                log.debug('--Last N Equatorward %s, %.3f' % (north_crossings['e_time'][-1].strftime('%H:%M:%S'),latitude[north_crossings['e_ind'][-1]]))
-            if len(south_crossings['s_time'])>1:
-                log.debug('--Last S Poleward %s, %.3f' % (south_crossings['s_time'][-1].strftime('%H:%M:%S'),latitude[south_crossings['s_ind'][-1]]))
-            if len(south_crossings['e_time'])>1:
-                log.debug('--Last S Equatorward %s, %.3f' % (south_crossings['e_time'][-1].strftime('%H:%M:%S'),latitude[south_crossings['e_ind'][-1]]))
-
-            ncrossings+=1
-
-    #Check for dangling pass ends at beginning
-    if north_crossings['e_time'][0] < north_crossings['s_time'][0]:
-        log.debug("Dangling northern hemisphere pass end (%s) at START of day REMOVED" % (north_crossings['e_time'][0].strftime('%H:%M:%S')))
-
-        for key in north_crossings:
-            if key[0]=='e':
-                north_crossings[key] = north_crossings[key][1:]
-
-
-    if south_crossings['e_time'][0] < south_crossings['s_time'][0]:
-        log.debug("Dangling southern hemisphere pass end (%s) at START of day REMOVED" % (south_crossings['e_time'][0].strftime('%H:%M:%S')))
-
-        for key in south_crossings:
-            if key[0]=='e':
-                south_crossings[key] = south_crossings[key][1:]
-
-    #Check for dangling pass starts at end
-    if north_crossings['s_time'][-1] > north_crossings['e_time'][-1]:
-        log.debug("Dangling northern hemisphere pass start (%s) at END of day REMOVED" % (south_crossings['s_time'][-1].strftime('%H:%M:%S')))
-
-        for key in north_crossings:
-            if key[0]=='s':
-                north_crossings[key] = north_crossings[key][0:-1]
-
-
-    if south_crossings['s_time'][-1] > south_crossings['e_time'][-1]:
-        log.debug("Dangling southern hemisphere pass start (%s) at END of day REMOVED" % (south_crossings['s_time'][-1].strftime('%H:%M:%S')))
-        for key in south_crossings:
-            if key[0]=='s':
-                south_crossings[key] = south_crossings[key][0:-1]
-
-
-    #check_passes(times,latitude,north_crossings,south_crossings)
-
-    #Now that all of the shuffling is done split the dict of lists
-    #into lists of dicts so that we get 1 dict per pass
-    north_passes = []
-    south_passes = []
-
-    #pdb.set_trace()
-    log.debug("Now creating 1 dict for each northern and southern pass and placing in return list")
-    for n in range(min([len(north_crossings['s_time']),len(north_crossings['e_time'])]) ):
-        passdict = {}
-        for key in north_crossings:
-            passdict[key]=north_crossings[key][n]
-        north_passes.append(passdict)
-
-    for s in range(min([len(south_crossings['s_time']),len(south_crossings['e_time'])])):
-        passdict = {}
-        for key in south_crossings:
-            passdict[key]=south_crossings[key][s]
-        south_passes.append(passdict)
-
-    return north_passes, south_passes
-
-def check_passes(times,latitude,north_crossings,south_crossings):
-    import matplotlib.pyplot as pp
-    f = pp.figure(figsize=(8,6))
-    a = pp.axes()
-    a.plot(times,latitude,'k-')
-    a.hold(True)
-
-    a.plot(times[north_crossings['s_ind']],latitude[north_crossings['s_ind']],'g^',label='North Poleward Crossing')
-    a.plot(times[south_crossings['s_ind']],latitude[south_crossings['s_ind']],'r^',label='South Poleward Crossing')
-
-    a.plot(times[north_crossings['e_ind']],latitude[north_crossings['e_ind']],'gv',label='North Equatorward Crossing')
-    a.plot(times[south_crossings['e_ind']],latitude[south_crossings['e_ind']],'rv',label='South Equatorward Crossing')
-
-    a.legend()
-    f.autofmt_xdate()
-    return f
-
 def timepos_ticklabels(ax,t,lat,ltlon,fs=10):
     """
     Make Multi-Line Tick Labels for Spacecraft Data with time, lat and localtime/longitude
@@ -621,13 +254,23 @@ def timepos_ticklabels(ax,t,lat,ltlon,fs=10):
     matplotlib.artist.setp(ax.get_xmajorticklabels(),size=fs,rotation=0)
 
 def multiline_timelabels(ax,tdata,xdata,strffmt='%H:%M',xfmt=['%.1f']):
-    """
-    Adds additional lines to the labels of an existing axes.
-    tdata - data that was passed to the plot function, must be an array of datetime objects
-    xdata - any number of columns of additional data to be added to labels. Must have same number
-                of rows as tdata.
-    strffmt - format specification to datetime.datetime.strftime for time labels
-    xfmt - list of formats for each column of xdata
+    """Adds additional lines to the labels of an existing axes.
+    
+    INPUTS
+    ------
+
+    tdata : numpy.ndarray
+        data that was passed to the plot function, must be an array of datetime objects
+    xdata : numpy.ndarray
+        any number of columns of additional data to be added to labels. Must have same number of rows as tdata.
+    strffmt : str
+        format specification to datetime.datetime.strftime for time labels
+    xfmt : list
+        list of formats for each column of xdata
+
+    RETURNS
+    -------
+
     """
     #Manually create the tick labels
     #There is probably a better way to do this with FuncFormatter, but I couldn't
@@ -664,20 +307,28 @@ def multiline_timelabels(ax,tdata,xdata,strffmt='%H:%M',xfmt=['%.1f']):
 
 def draw_dialplot(ax,minlat=50,padding=3,fslt=10,fslat=12,southern_hemi=False,
     draw_circles=True,latlabels=True):
-    """
-    Draws the dialplot and labels the latitudes
+    """Draws the dialplot and labels the latitudes
+    
+    PARAMETRS
+    ---------
+    
+    ax : matplotlib.axes.Axes
+        Axes object to plot on
+    minlat : {60,50,40}, optional
+        Latitude of largest ring of dialplot
+    padding : int, optional
+        Amount of extra space to put around the plot ( in plot units )
+    fslt : int,optional
+        Font size for hour labels
+    fslat : int,optional
+        Font size for latitude labels
+    southern_hemi : bool,optional
+        Defaults to False, put negative signs on latitude labels
+    draw_circles : bool,optional
+        Draw the circles at the labeled latitudes (default: True)
+    latlabels : bool,optional
+        Draw latitude labels on plot (default: True)
 
-        minlat : {60,50,40}, optional
-            Latitude of largest ring of dialplot
-        padding : int, optional
-            Amount of extra space to put around the plot
-            Used with xlim so is in plot units
-        fslt : int,optional
-            Font size for hour labels
-        fslat : int,optional
-            Font size for latitude labels
-        southern_hemi : bool,optional
-            Defualts to False, put negative signs on latitude labels
     """
     phi = linspace(0,2*pi,3000)
 
@@ -844,6 +495,7 @@ def hairplot(ax,lat,lt,C,hemisphere,max_size=10,max_val=None,vmin=None,vmax=None
     Makes top-down polar plots with vertical lines to indicate intensity and color along spacecraft track.
     Can handle either an array of colors or a variable of colors.
     """
+    
     #Draw the background dialplot on
     if dialplot:
         draw_dialplot(ax)
@@ -867,9 +519,12 @@ def hairplot(ax,lat,lt,C,hemisphere,max_size=10,max_val=None,vmin=None,vmax=None
     #Implement filtering very small values out
     above_min = np.abs(C) > min_displayed
 
+    if 'alpha' not in kwargs:
+        kwargs['alpha']=.75
+
     norm = Normalize(vmin=vmin,vmax=vmax)
     Q = ax.quiver(X[above_min],Y[above_min],X1[above_min],Y1[above_min],C[above_min],
-        angles='xy',units='xy',width=.4,scale_units='xy',scale=1,alpha=.75,headwidth=0,headlength=0,norm=norm,**kwargs)
+        angles='xy',units='xy',width=.4,scale_units='xy',scale=1,headwidth=0,headlength=0,norm=norm,**kwargs)
 
     #Q appears to not actually create a mappable??
     mappable = matplotlib.cm.ScalarMappable(norm=Q.norm,cmap=Q.cmap)
@@ -962,47 +617,48 @@ def vector_plot(ax,data,satname='dmsp',color='blue',latlim=-50.,max_vec_len=12.,
 
     PARAMETERS
     ----------
-        ax : matplotlib.axes
-            Thing we're going to plot on
-        data : numpy.ndarray
-            n x 5 array of spacecraft data
-            column 1 = time (UT sec of day)
-            column 2 = latitude (magnetic or otherwise)
-            column 3 = localtime (magnetic or local solar)
-            column 4 = eastward component of vector data
-            column 5 = northward component of vector data
-        satname : str, optional
-            Text to place at end of spacecraft track
-        latlim : float, optional
-            Largest ring of dial plot (set to negative to indicate
-                that data is for southern hemisphere)
-        secondCoord : str, optional
-            localtime or longitude
-        max_vec_len : float, optional
-            Maximum length of vector in plot coordinates (i.e. degrees latitude)
-        max_magnitude : float, optional
-            Value of sqrt(Vec_east**2+Vec_north**2) that will be associated with
-            a vector of length max_vec_len on plot (scaling factor)
-        min_displayed : float, optional
-            Value of sqrt(Vec_east**2+Vec_north**2) that represents the threshold for
-            'noise' level measurements. The code will not display vectors below this
-            value to reduce visual clutter.
-        reference_vector_len : float, optional
-            The size of the reference vector in the lower left of the plot
-        reference_vector_label : str, optional
-            Label for reference vector
-        labeljustify : {'left','right','auto'}, optional
-            Where to position the satname at the end of the track
-        labeltrack : bool, optional
-            Draw the label at the end of track if True
-        fontsize : int, optional
-            Size of fonts for labels
-        skip : int, optional
-            Cadence of vectors to plot, i.e. skip=2 plots every other vector, except for the ten largest
-        plottime : boolean, optional
-            Plot the start time of the pass at the first point
-        col2isnorth : boolean, optional
-            Assume that the 5th column is northward, if false, assumes it's radial (i.e. equatorward, i.e. Apex d2)
+    
+    ax : matplotlib.axes
+        Thing we're going to plot on
+    data : numpy.ndarray
+        n x 5 array of spacecraft data
+        column 1 = time (UT sec of day)
+        column 2 = latitude (magnetic or otherwise)
+        column 3 = localtime (magnetic or local solar)
+        column 4 = eastward component of vector data
+        column 5 = northward component of vector data
+    satname : str, optional
+        Text to place at end of spacecraft track
+    latlim : float, optional
+        Largest ring of dial plot (set to negative to indicate
+            that data is for southern hemisphere)
+    secondCoord : str, optional
+        localtime or longitude
+    max_vec_len : float, optional
+        Maximum length of vector in plot coordinates (i.e. degrees latitude)
+    max_magnitude : float, optional
+        Value of sqrt(Vec_east**2+Vec_north**2) that will be associated with
+        a vector of length max_vec_len on plot (scaling factor)
+    min_displayed : float, optional
+        Value of sqrt(Vec_east**2+Vec_north**2) that represents the threshold for
+        'noise' level measurements. The code will not display vectors below this
+        value to reduce visual clutter.
+    reference_vector_len : float, optional
+        The size of the reference vector in the lower left of the plot
+    reference_vector_label : str, optional
+        Label for reference vector
+    labeljustify : {'left','right','auto'}, optional
+        Where to position the satname at the end of the track
+    labeltrack : bool, optional
+        Draw the label at the end of track if True
+    fontsize : int, optional
+        Size of fonts for labels
+    skip : int, optional
+        Cadence of vectors to plot, i.e. skip=2 plots every other vector, except for the ten largest
+    plottime : boolean, optional
+        Plot the start time of the pass at the first point
+    col2isnorth : boolean, optional
+        Assume that the 5th column is northward, if false, assumes it's radial (i.e. equatorward, i.e. Apex d2)
 
     """
     #if labeltext=='default':
@@ -1254,141 +910,6 @@ def vector_component_plot(ax_e,ax_n,data,satname='dmsp',color='blue',latlim=-50.
             ax_n.text(X[d],Y[d],t.strftime('%X'),color=color,va='top',ha=timejustify,fontsize=fontsize,alpha=.75)
     return ax_e,ax_n
 
-def greatCircleDist(location1,location2,lonorlt='lt'):
-    #Returns n angular distances in radians between n-by-2 numpy arrays
-    #location1, location2 (calculated row-wise so diff between
-    #location1[0,] and location2[0,]
-    #assuming that these arrays have the columns lat[deg],localtime[hours]
-    #and that they are points on a sphere of constant radius
-    #(the points are at the same altitude)
-    azi2rad = pi/12. if lonorlt=='lt' else pi/180
-    wrappt = 24. if lonorlt=='lt' else 360.
-    #Bounds check
-    over = location1[:,1] > wrappt
-    under = location1[:,1] < 0.
-    location1[over,1]=location1[over,1]-wrappt
-    location1[under,1]=location1[under,1]+wrappt
-
-    if location1.ndim == 1 or location2.ndim == 1:
-        dphi = abs(location2[1]-location1[1])*azi2rad
-        a = (90-location1[0])/360*2*pi #get the colatitude in radians
-        b = (90-location2[0])/360*2*pi
-        C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
-    else:
-        dphi = abs(location2[:,1]-location1[:,1])*azi2rad
-        a = (90-location1[:,0])/360*2*pi #get the colatitude in radians
-        b = (90-location2[:,0])/360*2*pi
-        C =  np.pi - np.abs(dphi - np.pi)#get the angular distance in longitude in radians
-    return arccos(cos(a)*cos(b)+sin(a)*sin(b)*cos(C))
-
-def circularOrbit(ut,ut1,lat1,azi1,ut2,lat2,azi2,lonorlt='lt'):
-    """
-    Find latitude and longitude at time ut of
-    circular orbit including points (ut1,lat1,azi1)
-    and (ut2,lat2,azi2)
-    from
-    Aviation Formulary by Ed Williams
-    http://edwilliams.org/avform.htm#Intermediate
-    NOTE:
-    will not work if points 1 and 2 are exactly 180 degrees
-    apart because route between them is undefined
-    """
-    wrappt = 24. if lonorlt=='lt' else 360.
-    azi_high_check = lambda azi: azi-wrappt if azi>wrappt else azi
-    azi_low_check = lambda azi: azi+wrappt if azi<wrappt else azi
-    azi_check = lambda azi: azi_high_check(azi_low_check(azi))
-    azi2lon = lambda azi: azi*180./12. if lonorlt=='lt' else azi
-    lon2azi = lambda lon: lon*12./180. if lonorlt=='lt' else lon
-
-    #Bounds check and convert to lon
-    lon1=azi2lon(azi_check(azi1))
-    lon2=azi2lon(azi_check(azi2))
-
-    lambda1,lambda2 = radians(lat1),radians(lat2)
-    phi1,phi2 = radians(lon1),radians(lon2)
-
-    #Calculate orbital period
-    #great circle distance with better rounding error for short angles
-    #http://edwilliams.org/avform.htm#Dist
-    gcdist = 2*arcsin(sqrt((sin((lambda1-lambda2)/2.))**2. \
-        +cos(phi1)*cos(phi2)*(sin((phi1-phi2)/2.))**2.))
-    #gcdist = arccos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon1-lon2))
-
-    gcdist = np.abs(gcdist)
-    delta_t = np.abs(ut2-ut1)
-    T = delta_t*(2*pi)/gcdist
-
-    f = (ut-ut1)/delta_t # f is percent of distance between point 1 and 2
-
-    #f = f-floor(f) # -1 to 1
-    #f = 1+f if f < 0 else f # 0 to 1
-
-    #print('ut: {} lat: {} lt: {} lon: {}'.format(ut1,lat1,azi1,lon1))
-    #print('ut: {} lat: {} lt: {} lon: {}'.format(ut2,lat2,azi2,lon2))
-    #print('delta_t {} gcdist {} period {} mins '.format(delta_t,gcdist,T/60.))
-
-    d = arccos(sin(lambda1)*sin(lambda2)+cos(lambda1)*cos(lambda2)*cos(phi1-phi2))
-    A = sin((1.-f)*d)/sin(d)
-    B = sin(f*d)/sin(d)
-    x = A*cos(lambda1)*cos(phi1)+B*cos(lambda2)*cos(phi2)
-    y = A*cos(lambda1)*sin(phi1)+B*cos(lambda2)*sin(phi2)
-    z = A*sin(lambda1)+B*sin(lambda2)
-
-    lat_f = degrees(arctan2(z, sqrt(x**2 + y**2)))
-    lon_f = degrees(arctan2(y,x))
-    azi_f = azi_check(lon2azi(lon_f))
-    #print('ut {} f {} lat {} lt {} lon {} '.format(ut,f,lat_f,azi_f,lon_f))
-
-    return lat_f,azi_f
-
-def greatCircleMidpoint(location1,location2,angDist='compute',lonorlt='lt'):
-    #Finds the midpoint lat and lt or lon between two locations along a great circle arc
-    #Can pass angDist as an array to speed up process if already computed,
-    #otherwise computes as needed using above function
-    azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180
-    wrappt = 24. if lonorlt=='lt' else 360.
-    #Bounds check
-    over = location1[:,1] > wrappt
-    under = location1[:,1] < 0.
-    location1[over,1]=location1[over,1]-wrappt
-    location1[under,1]=location1[under,1]+wrappt
-
-    if location1.ndim == 1 or location2.ndim == 1:
-        a = (90-location1[0])*azi2rad
-        b = (90-location2[0])*azi2rad
-        if angDist is 'compute':
-            c = greatCircleDist(location1,location2,lonorlt=lonorlt)
-        else:
-            c = angDist
-        C = (location2[1]-location1[1])/24*2*np.pi
-        azi1 = location1[1]
-    else:
-        a = (90-location1[:,0])*azi2rad
-        b = (90-location2[:,0])*azi2rad
-        if angDist is 'compute':
-            c = greatCircleDist(location1,location2,lonorlt=lonorlt)
-        else:
-            c = angDist
-        C = (location2[:,1]-location1[:,1])/24*2*np.pi
-        azi1 = location1[:,1]
-
-    #original: g = arccos((cos(b)-cos(c)*cos(a)*sin(c/2))*sin(c/2)/sin(c)+cos(a)*cos(c/2))
-    cos_g = cos(a)*cos(c/2)+((cos(b)-cos(a)*cos(c))/sin(c))*sin(c/2)
-    g = arccos(cos_g)
-    sin_I = (sin(c/2)*sin(b)*sin(C)/(sin(c)*sin(g)))
-    I = arcsin(sin_I)
-    lat_mid = 90-g/(2*pi)*360
-    azi_mid = azi1+I/(2*pi)*24
-    #lt_mid[lt_mid>=24] = lt_mid[lt_mid>=24]-24
-        #print "(%.2f-%.2f:%.2f,%.2f-%.2f:%.2f,g=%.2f,I=%.2f)" % (location1[0],location2[0],lat_mid,location1[1],location2[1],lt_mid,g/(2*pi)*360,I/(2*pi)*24)
-    return lat_mid, azi_mid
-
-def azi_difference(azi1,azi2, lonorlt='lt'):
-    """Difference between two longitudes or local times (azi2-azi1), taking into account
-        wrapping"""
-    azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180.
-    return np.arctan2(np.sin(azi2*azi2rad-azi1*azi2rad), np.cos(azi2*azi2rad-azi1*azi2rad))/azi2rad
-
 def cubic_bez_arc(lat,azi1,azi2,lonorlt='lt'):
     """Returns the control point locations for a cubic bezier curve approximation of the arc between
         azi1 and azi2 at a radius of 90-abs(lat)"""
@@ -1402,7 +923,15 @@ def cubic_bez_arc(lat,azi1,azi2,lonorlt='lt'):
     maxazi = 24. if lonorlt=='lt' else 360.
 
     r = 90.-np.abs(lat)
-    theta = azi_difference(azi1,azi2,lonorlt=lonorlt)
+
+    if lonorlt=='lt':
+        aziunit = 'hour' 
+    elif lonorlt=='lon':
+        aziunit = 'deg'
+    else:
+        raise ValueError('Invalid lonorlt {}'.format(lonorlt))
+        
+    theta = angle_difference(azi1,azi2,aziunit)
     midpoint = azi1+theta/2.
     tangent_len = r*np.tan(theta*azi2rad/2) # Length of tangent line
     r_cp = np.sqrt(r**2+(tangent_len/2)**2)
@@ -1416,11 +945,22 @@ def cubic_bez_arc(lat,azi1,azi2,lonorlt='lt'):
 def polarbinplot(ax,bin_edges,bin_values,hemisphere='N',lonorlt='lt',**kwargs):
     """
         Plots a collection of bins in polar coordinates on a dialplot
-        bin_edges - numpy.ndarray
-            Must have shape: n x 4 with columns:
-            bin_lat_start,bin_lat_end,bin_lonlt_start,bin_lonlt_end
-        lonorlt - 'lon' or 'lt'
-            Use longitude or localtime as azimuthal coordinate
+        
+    INPUTS
+    ------
+
+    bin_edges : numpy.ndarray
+        Must have shape [n x 4] with columns:
+        bin_lat_start,bin_lat_end,bin_lonlt_start,bin_lonlt_end
+    lonorlt : 'lon' or 'lt'
+        Use longitude or localtime as azimuthal coordinate
+    
+    RETURNS
+    -------
+
+    mappable : matplotlib.collections.PatchCollection
+        The collection of bin shapes (which can be fed to colorbar)
+
     """
     from matplotlib.path import Path
     from matplotlib.patches import PathPatch
@@ -1489,19 +1029,6 @@ def polarbinplot(ax,bin_edges,bin_values,hemisphere='N',lonorlt='lt',**kwargs):
     ax.add_collection(mappable)
 
     return mappable
-
-def angle_difference(ang1,ang2,degorhour='hour'):
-    """Difference between two angles in degrees or hours (ang2-ang1),
-    taking into account wrapping
-    """
-    ang2rad = np.pi/12. if degorhour=='hour' else np.pi/180.
-    return np.arctan2(np.sin(ang2*ang2rad-ang1*ang2rad), np.cos(ang2*ang2rad-ang1*ang2rad))/ang2rad
-
-def angle_midpoint(ang1,ang2,degorhour='hour'):
-    """
-    Midpoint between two angles in degrees or hours
-    """
-    return ang1 + angle_difference(ang1,ang2,degorhour=degorhour)/2.
 
 def polarbin_vectorplot(ax,bin_edges,bin_values_E,bin_values_N,
                             hemisphere='N',lonorlt='lt',color='black',
@@ -1590,10 +1117,10 @@ def rolling_window(a, window):
 
 def moving_average(x,window_size):
     """Creates a weighted average smoothed version of x using the weights in window"""
-    return np.nanmean(rolling_window(np.concatenate((x[:window_size/2],x,x[-window_size/2+1:])),window_size),-1)
+    return np.nanmean(rolling_window(np.concatenate((x[:window_size//2],x,x[-window_size//2+1:])),window_size),-1)
 
 def moving_median(x,window_size):
     """Creates a weighted average smoothed version of x using the weights in window"""
-    return np.nanmedian(rolling_window(np.concatenate((x[:window_size/2],x,x[-window_size/2+1:])),window_size),-1)
+    return np.nanmedian(rolling_window(np.concatenate((x[:window_size//2],x,x[-window_size//2+1:])),window_size),-1)
 
 
