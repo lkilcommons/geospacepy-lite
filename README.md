@@ -6,7 +6,7 @@
 
 A small library of python functions useful for geospace data analysis.
 
-Click the 'Docs' badge above to see the documentation, or go to the [notebooks repo](https://github.com/lkilcommons/geospacepy-notebooks) to get hands-on.
+Click the 'Docs' badge above to see the documentation, for interactive examples go to the [notebooks repo](https://github.com/lkilcommons/geospacepy-notebooks).
 
 ## Modules in Geospacepy-lite ###
 
