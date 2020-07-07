@@ -314,9 +314,12 @@ def solar_zenith_angle(jds,glats,glons):
         specified (radians)
 
     """
-    lam = np.radians(lats)
-    phi = np.radians(lons)
+    lam = np.radians(glats)
+    phi = np.radians(glons)
     
+    sra,sdec = solar_position_almanac(jds)
+    sha = local_hour_angle(jds,glons)
+
     cossza = np.sin(lam)*np.sin(sdec) + np.cos(lam)*np.cos(sdec)*np.cos(sha)
     szas = np.arccos(cossza)
     return szas
