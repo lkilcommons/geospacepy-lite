@@ -28,7 +28,6 @@ setup(name='geospacepy',
             "Development Status :: 4 - Beta",
             "Topic :: Scientific/Engineering",
             "Intended Audience :: Science/Research",
-            "License :: MIT",
             "Natural Language :: English",
             "Programming Language :: Python"
             ]
