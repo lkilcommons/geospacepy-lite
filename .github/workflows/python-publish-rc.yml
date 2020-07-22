@@ -5,8 +5,7 @@
 name: Upload Release Canidate Python Package to TestPyPI
 
 on:
-  release:
-    types: [created]
+  push:
     tags: 
       - v*rc*
 
