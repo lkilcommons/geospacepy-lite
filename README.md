@@ -1,8 +1,8 @@
 # Geospacepy-lite #
 
 [![Build Status](https://travis-ci.org/lkilcommons/geospacepy-lite.svg?branch=master)](https://travis-ci.org/lkilcommons/geospacepy-lite)
-[![Documentation Status](https://readthedocs.org/projects/geospacepy-lite/badge/?version=level_up_code_and_docs)](https://geospacepy-lite.readthedocs.io/en/level_up_code_and_docs/?badge=level_up_code_and_docs)
-[![Coverage Status](https://coveralls.io/repos/github/lkilcommons/geospacepy-lite/badge.svg?branch=level_up_code_and_docs&kill_cache=1)](https://coveralls.io/github/lkilcommons/geospacepy-lite?branch=level_up_code_and_docs)
+[![Documentation Status](https://readthedocs.org/projects/geospacepy-lite/badge/?version=master)](https://geospacepy-lite.readthedocs.io/en/level_up_code_and_docs/?badge=level_up_code_and_docs)
+[![Coverage Status](https://coveralls.io/repos/github/lkilcommons/geospacepy-lite/badge.svg?branch=master&kill_cache=1)](https://coveralls.io/github/lkilcommons/geospacepy-lite?branch=master)
 
 A small library of python functions useful for geospace data analysis.
 
