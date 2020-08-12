@@ -31,6 +31,17 @@ Conventions
 
 - SI units for physical quantities (e.g. earth radius is in meters)
 
+Contribution
+------------
+    
+Contributions are encouraged and welcomed. 
+
+The Geospacepy-lite project maintainer pledges to abide by and expects contributors to also abide by accepted open source community kindness, professionalism and courtesy standards (e.g. as outlined in the  `contributor covenant <https://www.contributor-covenant.org/version/2/0/code_of_conduct//>`_ )
+
+**Please make your contribution pull requests to the develop branch** 
+
+**Please ensure contributions include a unit test**
+
 Algorithms
 ----------
 
@@ -39,6 +50,7 @@ Most algorithms come from:
 Vallado, D. A., & McClain, W. D. (2007). Fundamentals of Astrodynamics and Applications (3rd edition). Hawthorne, Calif.: Microcosm Press/Springer.
 
 See the API documentation for additional algorithm sources.
+
 
 .. toctree::
    :maxdepth: 2

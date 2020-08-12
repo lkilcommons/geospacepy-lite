@@ -38,14 +38,6 @@ For example:
 * datetime2jd - converts from datetime.datetime to julian date
 * sodarr2datetime - converts an array of seconds of the day to an array of datetimes
 
-Contribution
-------------
-    
-If you are interested in adding a new time conversion to this module,
-please submit a pull request adding (1) the scalar version of the 
-time conversion to and from Python datetime (2) a unit test which tests
-your time conversion.
-
 API
 ---
 
