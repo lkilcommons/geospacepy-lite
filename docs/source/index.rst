@@ -14,7 +14,7 @@ The dependacies of the package are limited to the core scientific python package
 Conventions
 -----------
 
-- Angles will always expected or returned be in **radians** *except* :
+- Angles are generally assumed to be in **radians** *except* :
 
   * Latitudes (assumed degrees)
   * Longitudes (assumed degrees)
