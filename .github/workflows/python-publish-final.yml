@@ -28,7 +28,7 @@ jobs:
     - name: Build
       run: |
         python setup.py sdist
-    - name: Publish package to TestPyPI
+    - name: Publish sdist package to PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:
         user: __token__
