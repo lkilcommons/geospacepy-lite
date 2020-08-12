@@ -1,23 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Dial plots for spacecraft data using matplotlib.
-Also, routines for converting between spacecraft
-or geophysical coordinate systems and cartesian
-coordinates.
-Author: Liam M. Kilcommons
-"""
+# (C) 2020 University of Colorado AES-CCAR-SEDA (Space Environment Data Analysis) Group
+# Written by Liam M. Kilcommons
 from numpy import *
 import numpy as np
 import bisect
-import pdb
-# (C) 2020 University of Colorado AES-CCAR-SEDA (Space Environment Data Analysis) Group
-# Written by Liam M. Kilcommons
 import datetime
 import logging
 import matplotlib
 from matplotlib.colors import Normalize, LogNorm
-from scipy import interpolate
-from scipy import ndimage
 from geospacepy.spherical_geometry import (angle_difference,
                                             angle_midpoint,
                                             great_circle_distance)

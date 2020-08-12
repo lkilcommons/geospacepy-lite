@@ -6,7 +6,7 @@ from geospacepy.array_management import (CheckInputsAreThreeComponentVectors,
                                         BroadcastLenOneInputsToMatchArrayInputs)
 from geospacepy.rotations import rot1,rot2,rot3
 from geospacepy.sun import greenwich_mean_siderial_time
-from scipy.spatial.transform import Rotation
+#from scipy.spatial.transform import Rotation
 
 R_EARTH = 6371200 #m
 

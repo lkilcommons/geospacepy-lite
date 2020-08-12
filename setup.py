@@ -4,6 +4,7 @@
 
 import os
 import glob
+import textwrap
 
 os.environ['DISTUTILS_DEBUG'] = "1"
 
@@ -12,14 +13,21 @@ from setuptools.command import install as _install
 
 setup(name='geospacepy',
       version = "0.2.0",
-      description = "A collection of standalone modules for geospace data analysis",
+      description = "A small library for geospace data analysis",
       author = "Liam Kilcommons",
       author_email = 'liam.kilcommons@colorado.edu',
       url = "https://github.com/lkilcommons/geospacepy-lite",
       download_url = "https://github.com/lkilcommons/geospacepy-lite",
-      long_description = ("A toolbox for geospace data analysis."
-                          +" Check individual modules for more info."),
-      install_requires=['numpy','matplotlib','scipy','requests'],
+      long_description = textwrap.dedent("""Geospacepy-lite aims to be
+                        a toolbox library for working with observations
+                        from low-earth-orbiting spacecraft focusing on
+                        complete vectorization of algorithms and 
+                        consistant numpy array shape handling.
+                        Submodules focus on transformations between various time
+                        types, earth centered coordinate systems,
+                        distance and area calculations using spherical geometry,
+                        and solar-position-dependant calcuations."""),
+      install_requires=['numpy','matplotlib','requests'],
       packages=['geospacepy'],
       package_dir={'geospacepy' : 'geospacepy'},
       license='LICENSE.txt',
