@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 import numpy.testing as nptest
 from geospacepy.rotations import rot
-from scipy.spatial.transform import Rotation
+#from scipy.spatial.transform import Rotation
 
 @pytest.mark.parametrize('n_vecs,n_angles',[(1,1),(3,1),(3,3)])
 def test_90_degree_rotation_of_xhat_about_z_produces_yhat(n_vecs,n_angles):
