@@ -230,7 +230,7 @@ def local_hour_angle(jds,glons):
     -------
 
     lhas : np.ndarray or float
-        Local hour angles for locations at specified times
+        Local hour angles for locations at specified times (in radians)
     
     .. note::
 
@@ -267,7 +267,7 @@ def local_mean_solar_time(jds,glons):
     -------
 
     lmsts : np.ndarray or float
-            Local mean solar time at locations at specified times
+            Local mean solar time at locations at specified times (in radians)
 
     Notes
     -----
@@ -311,7 +311,7 @@ def solar_zenith_angle(jds,glats,glons):
 
     szas : np.ndarray or float
         Solar Zenith angles for the time/location combinations
-        specified (radians)
+        specified (in radians)
 
     """
     lam = np.radians(glats)
