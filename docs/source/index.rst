@@ -38,9 +38,8 @@ Contributions are encouraged and welcomed.
 
 The Geospacepy-lite project maintainer pledges to abide by and expects contributors to also abide by accepted open source community kindness, professionalism and courtesy standards (e.g. as outlined in the  `contributor covenant <https://www.contributor-covenant.org/version/2/0/code_of_conduct//>`_ )
 
-**Please make your contribution pull requests to the develop branch** 
-
-**Please ensure contributions include a unit test**
+- **Please make your contribution pull requests to the develop branch**
+- **Please include a unit test with your contribution pull request if you can**
 
 Algorithms
 ----------
