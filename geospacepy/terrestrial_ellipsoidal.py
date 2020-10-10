@@ -50,6 +50,9 @@ def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
         the position was in kilometers instead of meters)
 
     """
+    if np.any(np.logical_not(np.isfinite(R_ECEF))):
+        raise ValueError(('Non-finite earth-centered-earth-fixed positions')
+                          +' can not be converted to geodetic')
 
     X = R_ECEF[:,0].flatten()
     Y = R_ECEF[:,1].flatten()
@@ -94,17 +97,19 @@ def ecef_cart2geodetic(R_ECEF,tol=1e-7,maxiters=100):
     gdlats_estimated = delta
     gdlats = None
     for i in range(maxiters):
-        print(i,gdlats_estimated)
-        prev_estimated = gdlats_estimated
+        #print(i,gdlats_estimated)
+        prev_estimated = gdlats_estimated.copy()
         gdlats_estimated = refine_geodetic_latitude_estimate(gdlats_estimated)
         if np.all(np.abs(gdlats_estimated-prev_estimated)<tol):
-            print("Converged after {} iterations".format(i))
+            #print("Converged after {} iterations".format(i))
             gdlats = gdlats_estimated
             break
+
     if gdlats is None:
-        raise RuntimeError('Geodetic latitude estimation failed to converge'
-                           +'to iteration-to-iteration tolerance {}'.format(tol)
-                           +'after {} iterations'.format(maxiters))
+        warnstr=('Geodetic latitude estimation failed to converge'
+                +'to iteration-to-iteration tolerance {}'.format(tol)
+                +'after {} iterations'.format(maxiters))
+        raise RuntimeError(warnstr)
 
     #Find height above the surface of the ellipsoid
     h_ellps = R_eq/np.cos(gdlats)-C_earth(gdlats)
