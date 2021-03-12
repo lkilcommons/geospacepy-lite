@@ -1,7 +1,7 @@
 # (C) 2020 University of Colorado AES-CCAR-SEDA (Space Environment Data Analysis) Group
 # Written by Liam M. Kilcommons
 import numpy as np
-import pdb, traceback, logging,textwrap
+import traceback, logging,textwrap
 from functools import wraps
 import datetime
 import bisect
@@ -765,7 +765,7 @@ def fastMatchTimes(primary_dt,dt,tol_us=4e5,fail_on_duplicates=True,allow_duplic
             traceback.print_exc()
             print("Error in matchTimes:\nIndex in dt: %d\nBisect Right Index in primary_dt: %d\nBisect Left Index in primary_dt: %d" % (i,ind,ind_l))
             print("dt[i] %s\nprimary_dt[ind] %s\nprimary_dt[ind_l] %s" % (str(dt[i]),str(primary_dt[ind]),str(primary_dt[ind_l])))
-            pdb.set_trace()
+            #pdb.set_trace()
 
     #print "Completed timestamp alignment, %d points remained unmatched out of %d\n" %(unmatched_counter,len(dt))
 

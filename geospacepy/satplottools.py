@@ -1027,8 +1027,7 @@ def polarbin_vectorplot(ax,bin_edges,bin_values_E,bin_values_N,
                             alpha=.55,width=.35,zorder=10):
 
     #Find bin center lats and localtimes
-    lats = angle_midpoint(bin_edges[:,0],bin_edges[:,1],
-                                        degorhour='deg')
+    lats = angle_midpoint(bin_edges[:,0],bin_edges[:,1],'deg')
     latlim = 50.
 
     if lonorlt == 'lt':
@@ -1038,8 +1037,7 @@ def polarbin_vectorplot(ax,bin_edges,bin_values_E,bin_values_N,
     else:
         raise ValueError('Invalid lonorlt %s' % (lonorlt))
 
-    azis = angle_midpoint(bin_edges[:,2],bin_edges[:,3],
-                                        degorhour=degorhour_azi)
+    azis = angle_midpoint(bin_edges[:,2],bin_edges[:,3],degorhour_azi)
 
     azi2rad = np.pi/12. if lonorlt=='lt' else np.pi/180.
 

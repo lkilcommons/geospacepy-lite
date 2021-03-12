@@ -284,8 +284,8 @@ def local_mean_solar_time(jds,glons):
 
     """
     lhas = local_hour_angle(jds,glons)
-    lhas *= -1. #Convert to positive in the eastward direction
-    lmsts = lhas + np.pi #Equiv to + 12 in hours units
+    #lhas *= -1. #Convert to positive in the eastward direction
+    lmsts = lhas + np.pi  #Equiv to + 12 in hours units
     return lmsts
 
 @BroadcastLenOneInputsToMatchArrayInputs

@@ -7,6 +7,7 @@ import numpy.testing as nptest
 from geospacepy.special_datetime import jd2datetime,datetime2jd
 from geospacepy.sun import greenwich_mean_siderial_time
 from geospacepy.sun import solar_position_almanac,_solar_position_russell
+from geospacepy.sun import local_mean_solar_time
 
 #Vallado, pp 194, example of calculating Greenwich Mean
 #Siderial Time
@@ -30,6 +31,27 @@ def test_gmst_matches_vallado(shape):
         assert(np.abs(gmsts_deg-expected_gmsts_deg)<tol)
     else:
         nptest.assert_allclose(gmsts_deg,expected_gmsts_deg,atol=tol,rtol=0.)
+
+boulder_glat = 40.0150
+boulder_glon = -105.2705
+@pytest.mark.parametrize('local_hour',[6,12,18])
+def test_approx_lmst_for_boulder(local_hour):
+    #Daylight savings is March 14 to November 7
+    #pick a date during non-daylight savings
+    year,month,day = 2010,2,1
+    #Mountain standard time is UTC - 7
+    #Solar time can differ from solar time by up to 2 hours
+    #http://blog.poormansmath.net/the-time-it-takes-to-change-the-time/
+    ut_hour = np.mod(local_hour+7,24)
+    dt_utc = datetime.datetime(year,month,day,ut_hour)
+    jd_utc = datetime2jd(dt_utc)
+    local_mean_solar_rads = local_mean_solar_time(jd_utc,boulder_glon)
+    local_mean_solar_hour = local_mean_solar_rads*12/np.pi
+    if local_mean_solar_hour<0:
+        local_mean_solar_hour+=24
+    local_mean_solar_hour = np.mod(local_mean_solar_hour,24.)
+    assert(pytest.approx(local_mean_solar_hour,abs=2) == local_hour)
+
 
 # Test values taken from 2019 Naval Research Lab 
 # Astronomical Almanac. These are measured solar apparent position, 
