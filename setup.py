@@ -12,7 +12,7 @@ from setuptools import setup, Extension
 from setuptools.command import install as _install
 
 setup(name='geospacepy',
-      version = "0.2.1",
+      version = "0.2.2",
       description = "A small library for geospace data analysis",
       author = "Liam Kilcommons",
       author_email = 'liam.kilcommons@colorado.edu',
