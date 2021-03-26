@@ -202,6 +202,7 @@ def greenwich_mean_siderial_time(jds):
     # Ensure in 0 to 360.
     theta_GST = np.mod(theta_GST,360.)
 
+    # Heeyyyyy
     # Radians
     theta_GST = theta_GST * np.pi / 180.
     return theta_GST
