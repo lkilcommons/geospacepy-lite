@@ -202,7 +202,6 @@ def greenwich_mean_siderial_time(jds):
     # Ensure in 0 to 360.
     theta_GST = np.mod(theta_GST,360.)
 
-    # Heeyyyyy
     # Radians
     theta_GST = theta_GST * np.pi / 180.
     return theta_GST
@@ -232,9 +231,11 @@ def local_hour_angle(jds,glons):
 
     lhas : np.ndarray or float
         Local hour angles for locations at specified times (in radians)
-    
+        Output in the range of [-pi,pi]
+
     .. note::
 
+        0 rad is when the sun is directly overhead.
         See also Vallado Figure 3-9 (pp.157)
 
     """
@@ -248,6 +249,9 @@ def local_hour_angle(jds,glons):
     #But the hour angle is defined as positive opposite the earth's rotation
     phi = np.radians(glons)
     lhas = (gmst+phi) - sra
+
+    # Wrap lhas to be between [-pi,pi]
+    lhas = np.mod(lhas + np.pi, 2*np.pi) - np.pi
     return lhas
 
 @BroadcastLenOneInputsToMatchArrayInputs
@@ -269,6 +273,7 @@ def local_mean_solar_time(jds,glons):
 
     lmsts : np.ndarray or float
             Local mean solar time at locations at specified times (in radians)
+            Output in the range of [0,2pi]
 
     Notes
     -----
@@ -279,7 +284,8 @@ def local_mean_solar_time(jds,glons):
     The differences between hour angle and local time is that hour angle
     is:
     1.) Measured with positive in the westward direction
-    2.) Zero when the sun is directly overhead (instead of 12 for solar time)
+    2.) The sun is directly overhead (noon) at pi (hour 12), and midnight is
+        at 0 or 2pi (hour 0 or 24).
 
     See also Vallado pp. 184
 
