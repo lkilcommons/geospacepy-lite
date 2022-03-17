@@ -207,9 +207,9 @@ def simple_passes(latitude,half_or_full_orbit='half'):
             entered_south.append(k)
             #print "Entered Southern Hemisphere: ind:%d,lat:%.3f" % (k,latitude[k])
 
-    if half_or_full_orbit is 'half':
+    if half_or_full_orbit == 'half':
         xings = entered_north+entered_south
-    elif half_or_full_orbit is 'full':
+    elif half_or_full_orbit == 'full':
         if entered_north[0] < entered_south[0]:
             xings = entered_north
         elif entered_south[0] < entered_north[0]:
@@ -223,10 +223,10 @@ def timepos_ticklabels(ax,t,lat,ltlon,fs=10):
     """
     Make Multi-Line Tick Labels for Spacecraft Data with time, lat and localtime/longitude
     """
-    lat,ltlon,t = lat.flatten(),ltlon.flatten(),t.flatten()
-    using_datetimes = isinstance(t.tolist()[0],datetime.datetime)
+    lat, ltlon, t = lat.flatten(),ltlon.flatten(), t.flatten()
+    using_datetimes = isinstance(t.tolist()[0], datetime.datetime)
     if using_datetimes:
-        #Need to convert datetimes to matplotlib dates if we are listing with datetimes
+        # Need to convert datetimes to matplotlib dates if we are listing with datetimes
         mplt = np.array(matplotlib.dates.date2num(t.tolist()))
     else:
         mplt = t
