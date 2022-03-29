@@ -1,0 +1,22 @@
+# Autosaves
+*~
+
+# Compiled python modules.
+*.py[cod]
+
+# Test directories
+/build/
+.tox
+.coverage
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+/*.egg
+
+# Sphinx rendered directories
+docs/.build
+docs/.static
+docs/.templates
