@@ -47,9 +47,9 @@ def test_approx_lmst_for_boulder(local_hour):
     jd_utc = datetime2jd(dt_utc)
     local_mean_solar_rads = local_mean_solar_time(jd_utc,boulder_glon)
     local_mean_solar_hour = local_mean_solar_rads*12/np.pi
-    if local_mean_solar_hour<0:
-        local_mean_solar_hour+=24
-    local_mean_solar_hour = np.mod(local_mean_solar_hour,24.)
+    #if local_mean_solar_hour<0:
+    #    local_mean_solar_hour+=24
+    #local_mean_solar_hour = np.mod(local_mean_solar_hour,24.)
     assert(pytest.approx(local_mean_solar_hour,abs=2) == local_hour)
 
 
